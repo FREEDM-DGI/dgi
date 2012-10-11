@@ -30,6 +30,7 @@
 #include "config.hpp"
 #include "CSRConnection.hpp"
 #include "CSUConnection.hpp"
+#include "CSRSWConnection.hpp"
 #include "RequestParser.hpp"
 
 #include <vector>
@@ -71,7 +72,9 @@ CConnection::CConnection(boost::asio::io_service& p_ioService,
         ProtocolPtr(new CSUConnection(this))));
     m_protocols.insert(ProtocolMap::value_type(CSRConnection::Identifier(),
         ProtocolPtr(new CSRConnection(this))));
-    m_defaultprotocol = CSRConnection::Identifier();
+    m_protocols.insert(ProtocolMap::value_type(CSRSWConnection::Identifier(),
+        ProtocolPtr(new CSRSWConnection(this))));
+    m_defaultprotocol = CSRSWConnection::Identifier();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

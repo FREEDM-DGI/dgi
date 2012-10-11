@@ -12,6 +12,7 @@ set(
     CReliableConnection.cpp
     CSRConnection.cpp
     CSUConnection.cpp
+    CSRSWConnection.cpp
     IPeerNode.cpp
     IProtocol.cpp
     IHandler.cpp
