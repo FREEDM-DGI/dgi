@@ -69,6 +69,14 @@ CSRSWConnection::CSRSWConnection(CConnection *  conn)
     m_outsync = false;
 }
 
+void CSRSWConnection::ChangePhase(bool newround)
+{
+    m_outseq = 0;
+    m_outsync = false;
+    m_window.clear();
+    m_outstandingwindow.clear();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// CSRSWConnection::CSRSWConnection
 /// @description Send function for the CSRSWConnection. Sending using this

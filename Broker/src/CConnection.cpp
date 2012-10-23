@@ -121,12 +121,10 @@ void CConnection::Stop()
 ///////////////////////////////////////////////////////////////////////////////
 void CConnection::ChangePhase(bool newround)
 {
-    if(newround) { }
-    ProtocolMap::iterator it = m_protocols.find(CSRSWConnection::Identifier());
-    if(it != m_protocols.end())
+    ProtocolMap::iterator it;
+    for(it = m_protocols.begin(); it != m_protocols.end(); it++)
     {
-        it->second->Stop();
-        m_protocols[it->first] = ProtocolPtr(new CSRSWConnection(this));
+        it->second->ChangePhase(newround);
     }
 }
  

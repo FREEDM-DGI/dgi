@@ -67,6 +67,8 @@ class CSRSWConnection : public IProtocol
         std::string GetIdentifier() { return Identifier(); };
         /// Returns the identifier for this protocol.
         static std::string Identifier() { return "SRSW"; };
+        /// Handles Phase Changes
+        void ChangePhase(bool newround);
     private:
         /// Resend outstanding messages
         void Resend(const boost::system::error_code& err);
