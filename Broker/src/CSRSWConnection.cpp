@@ -71,7 +71,7 @@ CSRSWConnection::CSRSWConnection(CConnection *  conn)
 
 void CSRSWConnection::ChangePhase(bool newround)
 {
-    m_outseq = 0;
+    //m_outseq = 0;
     m_outsync = false;
     m_window.clear();
     m_outstandingwindow.clear();
