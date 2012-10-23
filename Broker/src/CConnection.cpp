@@ -109,6 +109,26 @@ void CConnection::Stop()
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
     GetSocket().close();
 }
+
+///////////////////////////////////////////////////////////////////////////////
+/// @fn CConnection::ChangePhase
+/// @description An event that gets called when the broker changes the current
+///   phase.
+/// @pre None
+/// @post The sliding window protocol if it exists is stopped.
+/// @param newround If true, the phase change is also the start of an entirely
+///     new round.
+///////////////////////////////////////////////////////////////////////////////
+void CConnection::ChangePhase(bool newround)
+{
+    if(newround) { }
+    ProtocolMap::iterator it = m_protocols.find(CSRSWConnection::Identifier());
+    if(it != m_protocols.end())
+    {
+        it->second->Stop();
+        m_protocols[it->first] = ProtocolPtr(new CSRSWConnection(this));
+    }
+}
  
 ///////////////////////////////////////////////////////////////////////////////
 /// @fn CConnection::Send

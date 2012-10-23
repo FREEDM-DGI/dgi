@@ -311,7 +311,7 @@ void CBroker::ChangePhase(const boost::system::error_code &err)
         m_phase=0;
         return;
     }
-
+    unsigned int oldphase = m_phase;
     // Past this point assume there is at least one module.
     m_schmutex.lock();
     m_phase++;
@@ -365,6 +365,10 @@ void CBroker::ChangePhase(const boost::system::error_code &err)
     if(m_modules.size() > 0)
     {
         Logger.Notice<<"Phase: "<<m_modules[m_phase].first<<" for "<<sched_duration<<"ms "<<"offset "<<CGlobalConfiguration::instance().GetClockSkew()<<std::endl;
+    }
+    if(m_phase != oldphase)
+    {
+        m_connManager.ChangePhase((m_phase==0));
     }
     //If the worker isn't going, start him again when you change phases.
     if(!m_busy)
