@@ -42,11 +42,6 @@ public:
         : boost::uuids::uuid(u)
     {}
 
-    /// Generates a UUID from an input string
-    explicit CUuid ( const std::string &s )
-		: boost::uuids::uuid(boost::uuids::string_generator()(s))
-    {}
-
     /// Returns a UUID in the DNS namespace for the given hostname.
     static CUuid from_dns( const std::string &s, const std::string &p )
 	{
