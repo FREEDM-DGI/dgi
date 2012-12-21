@@ -72,69 +72,62 @@ const unsigned int COPYRIGHT_YEAR = 2012;
 /// Broker entry point
 int main(int argc, char* argv[])
 {
-    CGlobalLogger::instance().SetGlobalLevel(3);
-    // Variable Declaration
-    po::options_description genOpts("General Options"),
-            configOpts("Configuration"), hiddenOpts("hidden");
-    po::options_description visibleOpts, cliOpts, cfgOpts;
+    po::options_description genOpts("General Options");
+    po::options_description configOpts("Configuration");
+    po::options_description cliOpts, cfgOpts;
     po::positional_options_description posOpts;
     po::variables_map vm;
     std::ifstream ifs;
     std::string cfgFile, loggerCfgFile, adapterCfgFile;
-    std::string listenIP, port, uuidString, hostname, uuidgenerator;
+    std::string listenIP, port, uuidString, hostname;
     unsigned int globalVerbosity;
     CUuid uuid;
+
+    CGlobalLogger::instance().SetGlobalLevel(3);
 
     // Load Config Files
     try
     {
         // Check command line arguments.
         genOpts.add_options()
-                ( "help,h", "print usage help (this screen)" )
-                ( "version,V", "print version info" )
                 ( "config,c",
                 po::value<std::string > ( &cfgFile )->
                 default_value("./config/freedm.cfg"),
-                "filename of additional configuration." )
-                ( "generateuuid,g",
-                po::value<std::string > ( &uuidgenerator )->default_value(""),
-                "Generate a uuid for the specified host, output it, and exit" )
-                ( "uuid,u", "Print this node's generated uuid and exit" );
+                "primary configuration file" )
+                ( "help,h", "print usage help (this screen)" )
+                ( "list-loggers,l", "print available loggers" )
+                ( "uuid,u", "print this node's generated uuid" )
+                ( "version,V", "print version info" );
 
         // This is for arguments in a config file or as arguments
         configOpts.add_options()
                 ( "add-host",
                 po::value<std::vector<std::string> >( )->composing(),
-                "peer hostname:port pair" )
+                "address of a peer in hostname:port format" )
                 ( "address",
                 po::value<std::string > ( &listenIP )->default_value("0.0.0.0"),
-                "IP interface to listen on" )
+                "IP interface on which to listen for peers" )
                 ( "port,p",
                 po::value<std::string > ( &port )->default_value("1870"),
-                "TCP port to listen on" )
-                ( "adapter-config", po::value<std::string>( &adapterCfgFile ),
-                "filename of the adapter specification for physical devices" )
-                ( "list-loggers", "Print all the available loggers and exit" )
-                ( "logger-config",
-                po::value<std::string > ( &loggerCfgFile )->
-                default_value("./config/logger.cfg"),
-                "name of the logger verbosity configuration file" )
+                "TCP port on which to listen for peers" )
                 ( "verbose,v",
                 po::value<unsigned int>( &globalVerbosity )->
                 implicit_value(5)->default_value(5),
-                "enable verbose output (optionally specify level)" );
-        hiddenOpts.add_options()
-                ( "setuuid", po::value<std::string > ( &uuidString ),
-                "UUID for this host" );
+                "output verbosity level" )
+                ( "adapter-config", po::value<std::string>( &adapterCfgFile ),
+                "filename of the adapter specification" )
+                ( "logger-config",
+                po::value<std::string > ( &loggerCfgFile )->
+                default_value("./config/logger.cfg"),
+                "name of the logger configuration file" );
 
         // Specify positional arguments
         posOpts.add("address", 1).add("port", 1);
         // Visible options
-        visibleOpts.add(genOpts).add(configOpts);
         // Options allowed on command line
-        cliOpts.add(visibleOpts).add(hiddenOpts);
+        cliOpts.add(genOpts).add(configOpts);
         // Options allowed in config file
-        cfgOpts.add(configOpts).add(hiddenOpts);
+        cfgOpts.add(configOpts);
         // If submodules need custom commandline options
         // there should be a 'registration' of those options here.
         // Other modules should use options of the form: 'modulename.option'
@@ -168,17 +161,7 @@ int main(int argc, char* argv[])
 
         if (vm.count("help"))
         {
-            std::cerr << visibleOpts << std::endl;
-            return 0;
-        }
-        if (uuidgenerator != "" || vm.count("uuid"))
-        {
-            if (uuidgenerator == "")
-            {
-                uuidgenerator = boost::asio::ip::host_name();
-            }
-            uuid = CUuid::from_dns(uuidgenerator, port);
-            std::cout << uuid << std::endl;
+            std::cout << cliOpts << std::endl;
             return 0;
         }
 
@@ -191,19 +174,17 @@ int main(int argc, char* argv[])
             return 0;
         }
 
+        // Generate this node's UUID
+        hostname = boost::asio::ip::host_name();
+        uuid = CUuid::from_dns(hostname,port);
         if (vm.count("uuid"))
         {
-            uuid = static_cast<CUuid> ( uuidString );
-            Logger.Info << "Loaded UUID: " << uuid << std::endl;
+            std::cout << uuid << std::endl;
+            return 0;
         }
-        else
-        {
-            // Try to resolve the host's dns name
-            hostname = boost::asio::ip::host_name();
-            Logger.Info << "Hostname: " << hostname << std::endl;
-            uuid = CUuid::from_dns(hostname,port);
-            Logger.Info << "Generated UUID: " << uuid << std::endl;
-        }
+        Logger.Info << "Hostname: " << hostname << std::endl;
+        Logger.Info << "Generated UUID: " << uuid << std::endl;
+ 
         // Refine the logger verbosity settings.
         CGlobalLogger::instance().SetGlobalLevel(globalVerbosity);
         CGlobalLogger::instance().SetInitialLoggerLevels(loggerCfgFile);
