@@ -151,10 +151,10 @@ class LBAgent
         float   m_Storage;
         /// Target value of gateway
         float   m_PStar;
-        /// Current gateway
-        float   m_Gateway;
-        /// Calculated gateway
-        float   m_CalcGateway;
+        /// Aggregate gateway from SST devices only
+        float   m_SstGateway;
+        /// Total gateway of all attached devices
+        float   m_NetGateway;
         /// Demand cost of this node in Demand
         float   m_DemandVal;
         /// Current Demand state of this node  

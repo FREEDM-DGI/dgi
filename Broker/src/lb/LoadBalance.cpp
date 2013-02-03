@@ -430,26 +430,23 @@ void LBAgent::LoadTable()
     m_Gen = CDeviceManager::Instance().GetNetValue<DRER>(&DRER::GetGeneration);
     m_Storage = CDeviceManager::Instance().GetNetValue<DESD>(&DESD::GetStorage);
     m_Load = CDeviceManager::Instance().GetNetValue<LOAD>(&LOAD::GetLoad);
-    m_Gateway = CDeviceManager::Instance().GetNetValue<SST>(&SST::GetGateway);
-    if (numSSTs >= 1)
-    {
-    m_CalcGateway = m_Gateway;
-    m_sstExists = true;
-    }
-    else
-    m_CalcGateway = m_Load - m_Gen - m_Storage;
+    m_SstGateway = CDeviceManager::Instance().GetNetValue<SST>(&SST::GetGateway);
+
+    (numSSTs >= 1) ? m_sstExists = true : false;
+    m_NetGateway = m_SstGateway + m_Load - m_Gen - m_Storage;
 
     std::stringstream ss;
-    ss << "----------- LOAD TABLE (Power Management) ------------"
+    ss << std::setprecision(5) << std::fixed;
+    ss << " ----------- LOAD TABLE (Power Management) ------------"
             << std::endl;
     ss << "\t| " << "Net DRER (" << numDRERs << "): " << m_Gen
-            << std::setw(14) << "Net DESD (" << numDESDs << "): "
-            << "   " << m_Storage  << std::endl;
+            << "    Net DESD    (" << numDESDs << "):  " << m_Storage
+            << "   |" << std::endl;
     ss << "\t| " << "Net Load (" << numLOADs << "): " << m_Load
-            << std::setw(17) << "Net Gateway (" << numSSTs << "): "
-            << m_Gateway << std::endl;
-    ss << "\t| Normal = " << m_Normal << std::setw(23)
-            << "Calc Gateway: " << "   " << m_CalcGateway  << std::endl;
+            << "    SST Gateway (" << numSSTs << "):  "
+            << m_SstGateway << "   |" << std::endl;
+    ss << "\t| Normal:       " << m_Normal << "    Overall Gateway:  "
+            << m_NetGateway << "   |" << std::endl;
     ss << "\t| ---------------------------------------------------- |"
             << std::endl;
     ss << "\t| " << std::setw(20) << "Node" << std::setw(27) << "State"
@@ -458,15 +455,14 @@ void LBAgent::LoadTable()
             << std::setw(7) << "|" << std::endl;
 
     //Compute the Load state based on the current gateway value and Normal
-    //TODO: API for future-could be the cost consensus algorithm from NCSU
-    if(m_CalcGateway < m_Normal - NORMAL_TOLERANCE)
+    if(m_NetGateway < m_Normal - NORMAL_TOLERANCE)
     {
         m_Status = LBAgent::SUPPLY;
     }
-    else if(m_CalcGateway > m_Normal + NORMAL_TOLERANCE)
+    else if(m_NetGateway > m_Normal + NORMAL_TOLERANCE)
     {
         m_Status = LBAgent::DEMAND;
-        m_DemandVal = m_Gateway-m_Normal;
+        m_DemandVal = m_SstGateway-m_Normal;
     }
     else
     {
@@ -497,32 +493,32 @@ void LBAgent::LoadTable()
         }
     }
     //Print the load information you have about the rest of the system
-    BOOST_FOREACH( PeerNodePtr p_, m_AllPeers | boost::adaptors::map_values)
+    BOOST_FOREACH( PeerNodePtr p, m_AllPeers | boost::adaptors::map_values)
     {
-        //std::cout<<"| " << p_->GetUUID() << std::setw(12)<< "Grp Member"
-        //                                   << std::setw(6) <<"|"<<std::endl;
-        if (CountInPeerSet(m_HiNodes,p_) > 0 )
+        std::string centeredUUID = p->GetUUID();
+        unsigned int padding = (36 - centeredUUID.length())/2;
+        centeredUUID.insert(0, padding, ' ');
+        centeredUUID.append(padding, ' ');
+
+        ss.setf(std::ios::internal, std::ios::adjustfield);
+        if (CountInPeerSet(m_HiNodes,p) > 0 )
         {
-            ss<<"\t| " << p_->GetUUID() << std::setw(12)<< "Demand"
-                          << std::setw(6) <<"|"<<std::endl;
+            ss << "\t| " << centeredUUID << "       Demand     |" << std::endl;
         }
-        else if (CountInPeerSet(m_NoNodes,p_) > 0 )
+        else if (CountInPeerSet(m_NoNodes,p) > 0 )
         {
-            ss<<"\t| " << p_->GetUUID() << std::setw(12)<< "Normal"
-                          << std::setw(6) <<"|"<<std::endl;
+            ss << "\t| " << centeredUUID << "       Normal     |" << std::endl;
         }
-        else if (CountInPeerSet(m_LoNodes,p_) > 0 )
+        else if (CountInPeerSet(m_LoNodes,p) > 0 )
         {
-            ss<<"\t| " << p_->GetUUID() << std::setw(12)<< "Supply"
-                          << std::setw(6) <<"|"<<std::endl;
+            ss << "\t| " << centeredUUID << "       Supply     |" << std::endl;
         }
         else
         {
-            ss<<"\t| " << p_->GetUUID() << std::setw(12)<< "------"
-                          << std::setw(6) <<"|"<<std::endl;
+            ss << "\t| " << centeredUUID << "       ------     |" << std::endl;
         }
     }
-    ss << "\t -----------------------------------------------------";
+    ss << "\t ------------------------------------------------------";
 
     Logger.Status << ss.str() << std::endl;
 }//end LoadTable
@@ -995,9 +991,9 @@ void LBAgent::PStar(device::SignalValue DemandValue)
         }
         else if(LBAgent::SUPPLY == m_Status)
         {
-            if( DemandValue <= m_Gateway + NORMAL_TOLERANCE - m_Normal )
+            if( DemandValue <= m_SstGateway + NORMAL_TOLERANCE - m_Normal )
             {
-                Logger.Notice << "P* = " << m_Gateway + DemandValue << std::endl;
+                Logger.Notice << "P* = " << m_SstGateway + DemandValue << std::endl;
                 (*it)->StepGateway(P_Migrate);
             }
             else
