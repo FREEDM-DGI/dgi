@@ -496,9 +496,16 @@ void LBAgent::LoadTable()
     BOOST_FOREACH( PeerNodePtr p, m_AllPeers | boost::adaptors::map_values)
     {
         std::string centeredUUID = p->GetUUID();
-        unsigned int padding = (36 - centeredUUID.length())/2;
-        centeredUUID.insert(0, padding, ' ');
-        centeredUUID.append(padding, ' ');
+        if (centeredUUID.size() >= 36)
+        {
+            centeredUUID.erase(36);
+        }
+        else
+        {
+            unsigned int padding = (36 - centeredUUID.length())/2;
+            centeredUUID.insert(0, padding, ' ');
+            centeredUUID.append(padding, ' ');
+        }
 
         ss.setf(std::ios::internal, std::ios::adjustfield);
         if (CountInPeerSet(m_HiNodes,p) > 0 )
