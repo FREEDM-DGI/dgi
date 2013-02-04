@@ -152,27 +152,10 @@ int LBAgent::Run()
 void LBAgent::StartPhase()
 {
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
-    m_broker.Schedule(m_StateTimer, PhaseEnd(),
+    m_broker.Schedule(m_StateTimer, m_broker.TimeRemaining(),
             boost::bind(&LBAgent::HandleStateTimer, this,
             boost::asio::placeholders::error));
     m_broker.Schedule("lb", boost::bind(&LBAgent::LoadManage, this), true);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// PhaseEnd
-/// @description Returns the time remaining until load balance ends
-/// @pre: Must be called during a load balance phase
-/// @post: Returns a value 10ms past the phase end
-/// @return: The time remaining before the load balance phase ends
-/// @limitations None
-////////////////////////////////////////////////////////////////////////////////
-boost::posix_time::time_duration LBAgent::PhaseEnd()
-{
-    Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
-
-    boost::posix_time::time_duration negligible;
-    negligible = boost::posix_time::milliseconds(10);
-    return m_broker.TimeRemaining() + negligible;
 }
 
 ////////////////////////////////////////////////////////////
@@ -359,11 +342,12 @@ void LBAgent::LoadManage()
     }
     else
     {
+        boost::posix_time::time_duration t = m_broker.TimeRemaining();
         // Schedule past the end of our phase so control will pass to the broker
         // after this LB, and we won't go again until it's our turn. Good.
-        m_broker.Schedule(m_GlobalTimer, PhaseEnd(),
+        m_broker.Schedule(m_GlobalTimer, t,
                 boost::bind(&LBAgent::StartPhase, this));
-        Logger.Info << "Won't run over phase, scheduling another LoadManage later" << std::endl;
+        Logger.Info << "Scheduled next phase in " << t << "ms" << std::endl;
     }
 
     //Remember previous load before computing current load
