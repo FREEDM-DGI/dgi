@@ -95,6 +95,10 @@ class LBAgent
     private:
         enum EStatus { SUPPLY, NORM, DEMAND }; 
          // Routines
+        /// Starts the next phase of load balance
+        void StartPhase();
+        /// Returns a time just past the current phase
+        boost::posix_time::time_duration PhaseEnd();
         /// Advertises a draft request to demand nodes on Supply 
         void SendDraftRequest();
         /// Maintains the load table  
@@ -103,8 +107,6 @@ class LBAgent
         void LoadManage();        
         /// Triggers the LoadManage routine on timeout
         void LoadManage( const boost::system::error_code& err );
-        /// Starts the state timer and restarts on timeout
-        void StartStateTimer( unsigned int delay );
         /// Sends request to SC module to initiate state collection on timeout
         void HandleStateTimer( const boost::system::error_code & error);
         

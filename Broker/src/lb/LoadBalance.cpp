@@ -138,10 +138,41 @@ LBAgent::~LBAgent()
 int LBAgent::Run()
 {
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
-    // This initializes the algorithm
-    LoadManage();
-    StartStateTimer( CTimings::LB_STATE_TIMER );
+    StartPhase();
     return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// StartPhase
+/// @description Schedules the next phase of load balance
+/// @pre: A prior call to state collection should be completed
+/// @post: Triggers the drafting algorithm by calling LoadManage()
+/// @limitations None
+////////////////////////////////////////////////////////////////////////////////
+void LBAgent::StartPhase()
+{
+    Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
+    m_broker.Schedule(m_StateTimer, PhaseEnd(),
+            boost::bind(&LBAgent::HandleStateTimer, this,
+            boost::asio::placeholders::error));
+    m_broker.Schedule("lb", boost::bind(&LBAgent::LoadManage, this), true);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// PhaseEnd
+/// @description Returns the time remaining until load balance ends
+/// @pre: Must be called during a load balance phase
+/// @post: Returns a value 10ms past the phase end
+/// @return: The time remaining before the load balance phase ends
+/// @limitations None
+////////////////////////////////////////////////////////////////////////////////
+boost::posix_time::time_duration LBAgent::PhaseEnd()
+{
+    Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
+
+    boost::posix_time::time_duration negligible;
+    negligible = boost::posix_time::milliseconds(10);
+    return m_broker.TimeRemaining() + negligible;
 }
 
 ////////////////////////////////////////////////////////////
@@ -317,14 +348,12 @@ void LBAgent::LoadManage()
     // LB completes, there's still time to run another before scheduling it.
     // Otherwise we'll steal time from the next broker module.
     if (m_broker.TimeRemaining() >
-        boost::posix_time::milliseconds(2*CTimings::LB_GLOBAL_TIMER))
+        boost::posix_time::milliseconds(2*CTimings::LB_GLOBAL_TIMER+10))
     {
         m_broker.Schedule(m_GlobalTimer,
-                          boost::posix_time::milliseconds(
-                              CTimings::LB_GLOBAL_TIMER),
-                          boost::bind(&LBAgent::LoadManage,
-                                      this,
-                                      boost::asio::placeholders::error));
+                boost::posix_time::milliseconds(CTimings::LB_GLOBAL_TIMER),
+                boost::bind(&LBAgent::LoadManage, this,
+                boost::asio::placeholders::error));
         Logger.Info << "Scheduled another LoadManage in "
                     << CTimings::LB_GLOBAL_TIMER << "ms" << std::endl;
     }
@@ -332,14 +361,9 @@ void LBAgent::LoadManage()
     {
         // Schedule past the end of our phase so control will pass to the broker
         // after this LB, and we won't go again until it's our turn. Good.
-        m_broker.Schedule(m_GlobalTimer,
-                          boost::posix_time::milliseconds(
-                              CTimings::LB_STATE_TIMER),
-                          boost::bind(&LBAgent::LoadManage,
-                                      this,
-                                      boost::asio::placeholders::error));
-        Logger.Info << "Won't run over phase, scheduling another LoadManage in "
-                    << CTimings::LB_STATE_TIMER << "ms" << std::endl;
+        m_broker.Schedule(m_GlobalTimer, PhaseEnd(),
+                boost::bind(&LBAgent::StartPhase, this));
+        Logger.Info << "Won't run over phase, scheduling another LoadManage later" << std::endl;
     }
 
     //Remember previous load before computing current load
@@ -1050,21 +1074,6 @@ void LBAgent::Desd_PStar()
 }
 
 ////////////////////////////////////////////////////////////
-/// StartStateTimer
-/// @description Starts the state timer and restarts on timeout
-/// @pre: Starts only on timeout or when you are the new leader
-/// @post: Passes control to HandleStateTimer
-/// @limitations
-/////////////////////////////////////////////////////////
-void LBAgent::StartStateTimer( unsigned int delay )
-{
-    Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
-
-    m_broker.Schedule(m_StateTimer, boost::posix_time::milliseconds(delay),
-        boost::bind(&LBAgent::HandleStateTimer, this, boost::asio::placeholders::error));
-}
-
-////////////////////////////////////////////////////////////
 /// HandleStateTimer
 /// @description Sends request to SC module to initiate and restarts on timeout
 /// @pre: Starts only on timeout
@@ -1080,8 +1089,6 @@ void LBAgent::HandleStateTimer( const boost::system::error_code & error )
         //Initiate state collection if you are the m_Leader
         CollectState();
     }
-
-    StartStateTimer( CTimings::LB_STATE_TIMER );
 }
 
 } // namespace lb
