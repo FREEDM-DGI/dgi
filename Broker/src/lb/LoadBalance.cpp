@@ -512,9 +512,11 @@ void LBAgent::LoadTable()
     BOOST_FOREACH( PeerNodePtr p, m_AllPeers | boost::adaptors::map_values)
     {
         std::string centeredUUID = p->GetUUID();
+        std::string pad = "       ";
         if (centeredUUID.size() >= 36)
         {
-            centeredUUID.erase(36);
+            centeredUUID.erase(35);
+            pad = "...    ";
         }
         else
         {
@@ -526,19 +528,19 @@ void LBAgent::LoadTable()
         ss.setf(std::ios::internal, std::ios::adjustfield);
         if (CountInPeerSet(m_HiNodes,p) > 0 )
         {
-            ss << "\t| " << centeredUUID << "       Demand     |" << std::endl;
+            ss << "\t| " << centeredUUID << pad << "Demand     |" << std::endl;
         }
         else if (CountInPeerSet(m_NoNodes,p) > 0 )
         {
-            ss << "\t| " << centeredUUID << "       Normal     |" << std::endl;
+            ss << "\t| " << centeredUUID << pad << "Normal     |" << std::endl;
         }
         else if (CountInPeerSet(m_LoNodes,p) > 0 )
         {
-            ss << "\t| " << centeredUUID << "       Supply     |" << std::endl;
+            ss << "\t| " << centeredUUID << pad << "Supply     |" << std::endl;
         }
         else
         {
-            ss << "\t| " << centeredUUID << "       ------     |" << std::endl;
+            ss << "\t| " << centeredUUID << pad << "------     |" << std::endl;
         }
     }
     ss << "\t ------------------------------------------------------";
