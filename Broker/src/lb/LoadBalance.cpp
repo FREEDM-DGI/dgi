@@ -432,8 +432,18 @@ void LBAgent::LoadTable()
     m_Load = CDeviceManager::Instance().GetNetValue<LOAD>(&LOAD::GetLoad);
     m_SstGateway = CDeviceManager::Instance().GetNetValue<SST>(&SST::GetGateway);
 
-    (numSSTs >= 1) ? m_sstExists = true : false;
-    m_NetGateway = m_SstGateway + m_Load - m_Gen - m_Storage;
+    if (numSSTs >= 1)
+    {
+        m_sstExists = true;
+        // FIXME should consider other devices
+        m_NetGateway = m_SstGateway;
+    }
+    else
+    {
+        m_sstExists = false;
+        // FIXME should consider Gateway
+        m_NetGateway = m_Load - m_Gen - m_Storage;
+    }
 
     std::stringstream ss;
     ss << std::setprecision(5) << std::fixed;
@@ -445,10 +455,16 @@ void LBAgent::LoadTable()
     ss << "\t| " << "Net Load (" << numLOADs << "): " << m_Load
             << "    SST Gateway (" << numSSTs << "):  "
             << m_SstGateway << "   |" << std::endl;
-    ss << "\t| Normal:       " << m_Normal << "    Overall Gateway:  "
-            << m_NetGateway << "   |" << std::endl;
+//
+// We will hide Overall Gateway for the time being as it is useless until
+// we properly support multiple device LBs.
+//
+//    ss << "\t| Normal:       " << m_Normal << "    Overall Gateway:  "
+//            << m_NetGateway << "   |" << std::endl;
+    ss << "\t| Normal:       " << m_Normal << std::setw(33) << "|" << std::endl;
     ss << "\t| ---------------------------------------------------- |"
             << std::endl;
+//
     ss << "\t| " << std::setw(20) << "Node" << std::setw(27) << "State"
             << std::setw(7) << "|" << std::endl;
     ss << "\t| " << std::setw(20) << "----" << std::setw(27) << "-----"

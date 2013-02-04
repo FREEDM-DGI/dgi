@@ -153,7 +153,7 @@ class LBAgent
         float   m_PStar;
         /// Aggregate gateway from SST devices only
         float   m_SstGateway;
-        /// Total gateway of all attached devices
+        /// equals m_SstGateway when an SST exists; don't run LB without an SST
         float   m_NetGateway;
         /// Demand cost of this node in Demand
         float   m_DemandVal;
