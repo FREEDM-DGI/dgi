@@ -152,10 +152,27 @@ int LBAgent::Run()
 void LBAgent::StartPhase()
 {
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
-    m_broker.Schedule(m_StateTimer, m_broker.TimeRemaining(),
+    m_broker.Schedule(m_StateTimer, PhaseEnd(),
             boost::bind(&LBAgent::HandleStateTimer, this,
             boost::asio::placeholders::error));
     m_broker.Schedule("lb", boost::bind(&LBAgent::LoadManage, this), true);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// PhaseEnd
+/// @description Returns the time remaining until load balance ends
+/// @pre: Must be called during a load balance phase
+/// @post: Returns a value 10ms past the phase end
+/// @return: The time remaining before the load balance phase ends
+/// @limitations None
+////////////////////////////////////////////////////////////////////////////////
+boost::posix_time::time_duration LBAgent::PhaseEnd()
+{
+    Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
+
+    boost::posix_time::time_duration negligible;
+    negligible = boost::posix_time::milliseconds(10);
+    return m_broker.TimeRemaining() + negligible;
 }
 
 ////////////////////////////////////////////////////////////
@@ -331,7 +348,7 @@ void LBAgent::LoadManage()
     // LB completes, there's still time to run another before scheduling it.
     // Otherwise we'll steal time from the next broker module.
     if (m_broker.TimeRemaining() >
-        boost::posix_time::milliseconds(2*CTimings::LB_GLOBAL_TIMER+10))
+        boost::posix_time::milliseconds(2*CTimings::LB_GLOBAL_TIMER))
     {
         m_broker.Schedule(m_GlobalTimer,
                 boost::posix_time::milliseconds(CTimings::LB_GLOBAL_TIMER),
@@ -342,7 +359,7 @@ void LBAgent::LoadManage()
     }
     else
     {
-        boost::posix_time::time_duration t = m_broker.TimeRemaining();
+        boost::posix_time::time_duration t = PhaseEnd();
         // Schedule past the end of our phase so control will pass to the broker
         // after this LB, and we won't go again until it's our turn. Good.
         m_broker.Schedule(m_GlobalTimer, t,
