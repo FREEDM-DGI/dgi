@@ -522,7 +522,7 @@ void LBAgent::LoadTable()
         {
             unsigned int padding = (36 - centeredUUID.length())/2;
             centeredUUID.insert(0, padding, ' ');
-            if (padding%2 == 0)
+            if (p->GetUUID().size()%2 == 0)
             {
                 padding--;
             }
