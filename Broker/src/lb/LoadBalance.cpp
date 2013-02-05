@@ -451,15 +451,16 @@ void LBAgent::LoadTable()
             << std::endl;
     // FIXME - if >9 devices of a type the table will be messed up
     // FIXME - if negative values the table will be messed up
-    ss << "\t| " << "Net DRER (" << std::setfill('0') << std::setw(2) << numDRERs << "): " 
-            << std::setfill(' ') << std::setw(7) << m_Gen << "   Net DESD    (" 
-            << std::setfill('0') << std::setw(2) << numDESDs << "):  "
-            << std::setfill(' ') << std::setw(7) << m_Storage << "  |" << std::endl;
-    ss << "\t| " << "Net Load (" << std::setfill('0') << std::setw(2) << numLOADs << "): " 
-            << std::setfill(' ') << std::setw(7) << m_Load << "   SST Gateway ("
-            << std::setfill('0') << std::setw(2) << numSSTs << "):  " 
-            << std::setfill(' ') << std::setw(7) << m_SstGateway << "  |" 
-            << std::endl;
+    ss << "\t| " << "Net DRER (" << std::setfill('0') << std::setw(2) 
+            << numDRERs << "): " << std::setfill(' ') << std::setw(7)
+            << m_Gen << "   Net DESD    (" << std::setfill('0') << std::setw(2)
+            << numDESDs << "):  " << std::setfill(' ') << std::setw(7) 
+            << m_Storage << "  |" << std::endl;
+    ss << "\t| " << "Net Load (" << std::setfill('0') << std::setw(2)
+            << numLOADs << "): " << std::setfill(' ') << std::setw(7) << m_Load
+            << "   SST Gateway (" << std::setfill('0') << std::setw(2) 
+            << numSSTs << "):  " << std::setfill(' ') << std::setw(7)
+            << m_SstGateway << "  |" << std::endl;
 //
 // We will hide Overall Gateway for the time being as it is useless until
 // we properly support multiple device LBs.
