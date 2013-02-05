@@ -464,21 +464,21 @@ void LBAgent::LoadTable()
             << std::setw(genWidth) << m_Gen << "     Net DESD    ("
             << extraStorageSpace << std::setfill('0') << std::setw(2)
             << numDESDs << "): " << std::setfill(' ') << std::setw(storageWidth)
-            << m_Storage << "   |" << std::endl;
+            << m_Storage << " |" << std::endl;
     ss << "\t| " << "Net Load (" << extraLoadSpace << std::setfill('0')
             << std::setw(2) << numLOADs << "): " << std::setfill(' ')
             << std::setw(loadWidth) << m_Load << "     SST Gateway ("
             << extraSstSpace << std::setfill('0') << std::setw(2) << numSSTs
             << "): " << std::setfill(' ') << std::setw(sstGateWidth)
-            << m_SstGateway << "   |" << std::endl;
+            << m_SstGateway << " |" << std::endl;
 //
 // We will hide Overall Gateway for the time being as it is useless until
 // we properly support multiple device LBs.
 //
 //    ss << "\t| Normal:       " << m_Normal << "    Overall Gateway:  "
 //            << m_NetGateway << "   |" << std::endl;
-    ss << "\t| Normal:       " << std::setw(7) << m_Normal << std::setfill(' ')
-            << std::setw(33) << "|" << std::endl;
+    ss << "\t| Normal:        " << std::setw(7) << m_Normal << std::setfill(' ')
+            << std::setw(32) << "|" << std::endl;
     ss << "\t| ---------------------------------------------------- |"
             << std::endl;
 //
