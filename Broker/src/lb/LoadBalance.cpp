@@ -466,7 +466,7 @@ void LBAgent::LoadTable()
 //    ss << "\t| Normal:       " << m_Normal << "    Overall Gateway:  "
 //            << m_NetGateway << "   |" << std::endl;
     ss << "\t| Normal:       " << std::setw(7) << m_Normal << std::setfill(' ')
-            << std::setw(32) << "|" << std::endl;
+            << std::setw(33) << "|" << std::endl;
     ss << "\t| ---------------------------------------------------- |"
             << std::endl;
 //
