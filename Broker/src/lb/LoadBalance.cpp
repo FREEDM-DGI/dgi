@@ -445,19 +445,31 @@ void LBAgent::LoadTable()
         m_NetGateway = m_Load - m_Gen - m_Storage;
     }
 
+    // used to ensure three digits before the decimal, two after
+    unsigned int genWidth = (m_Gen > 0 ? 6 : 7);
+    unsigned int storageWidth = (m_Storage > 0 ? 6 : 7);
+    unsigned int loadWidth = (m_Load > 0 ? 6 : 7);
+    unsigned int sstGateWidth = (m_SstGateway > 0 ? 6 : 7);
+    std::string extraGenSpace = (genWidth == 6 ? " " : "");
+    std::string extraStorageSpace = (storageWidth == 6 ? " " : "");
+    std::string extraLoadSpace = (loadWidth == 6 ? " " : "");
+    std::string extraSstSpace = (sstGateWidth == 6 ? " " : "");
+
     std::stringstream ss;
     ss << std::setprecision(2) << std::fixed;
     ss << " ----------- LOAD TABLE (Power Management) ------------"
             << std::endl;
     ss << "\t| " << "Net DRER (" << std::setfill('0') << std::setw(2) 
-            << numDRERs << "): " << std::setfill(' ') << std::setw(6)
-            << m_Gen << "     Net DESD    (" << std::setfill('0')
-            << std::setw(2) << numDESDs << "): " << std::setfill(' ') 
-            << std::setw(6) << m_Storage << "   |" << std::endl;
-    ss << "\t| " << "Net Load (" << std::setfill('0') << std::setw(2)
-            << numLOADs << "): " << std::setfill(' ') << std::setw(6) << m_Load
-            << "     SST Gateway (" << std::setfill('0') << std::setw(2) 
-            << numSSTs << "): " << std::setfill(' ') << std::setw(6)
+            << numDRERs << "): " << extraGenSpace << std::setfill(' ')
+            << std::setw(genWidth) << m_Gen << "     Net DESD    ("
+            << extraStorageSpace << std::setfill('0') << std::setw(2)
+            << numDESDs << "): " << std::setfill(' ') << std::setw(storageWidth)
+            << m_Storage << "   |" << std::endl;
+    ss << "\t| " << "Net Load (" << extraLoadSpace << std::setfill('0')
+            << std::setw(2) << numLOADs << "): " << std::setfill(' ')
+            << std::setw(loadWidth) << m_Load << "     SST Gateway ("
+            << extraSstSpace << std::setfill('0') << std::setw(2) << numSSTs
+            << "): " << std::setfill(' ') << std::setw(sstGateWidth)
             << m_SstGateway << "   |" << std::endl;
 //
 // We will hide Overall Gateway for the time being as it is useless until
