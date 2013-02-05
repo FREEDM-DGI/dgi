@@ -462,14 +462,14 @@ void LBAgent::LoadTable()
     ss << "\t| " << "Net DRER (" << std::setfill('0') << std::setw(2) 
             << numDRERs << "): " << extraGenSpace << std::setfill(' ')
             << std::setw(genWidth) << m_Gen << "     Net DESD    ("
-            << extraStorageSpace << std::setfill('0') << std::setw(2)
-            << numDESDs << "): " << std::setfill(' ') << std::setw(storageWidth)
+            << std::setfill('0') << std::setw(2) << numDESDs << "): "
+            << extraStorageSpace << std::setfill(' ') << std::setw(storageWidth)
             << m_Storage << " |" << std::endl;
-    ss << "\t| " << "Net Load (" << extraLoadSpace << std::setfill('0')
-            << std::setw(2) << numLOADs << "): " << std::setfill(' ')
+    ss << "\t| " << "Net Load (" << std::setfill('0') << std::setw(2)
+            << numLOADs << "): " << extraLoadSpace << std::setfill(' ')
             << std::setw(loadWidth) << m_Load << "     SST Gateway ("
-            << extraSstSpace << std::setfill('0') << std::setw(2) << numSSTs
-            << "): " << std::setfill(' ') << std::setw(sstGateWidth)
+            std::setfill('0') << std::setw(2) << numSSTs << "): " 
+            << extraSstSpace << std::setfill(' ') << std::setw(sstGateWidth)
             << m_SstGateway << " |" << std::endl;
 //
 // We will hide Overall Gateway for the time being as it is useless until
