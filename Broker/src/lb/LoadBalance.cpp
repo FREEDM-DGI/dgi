@@ -445,18 +445,27 @@ void LBAgent::LoadTable()
         m_NetGateway = m_Load - m_Gen - m_Storage;
     }
 
+    // net setting precisions
+    int genPre = (m_Gen > 0 ? 6 : 5);
+    int storagePre = (m_Storage > 0 ? 6 : 5);
+    int loadPre = (m_Load > 0 ? 6 : 5);
+    int sstGatePre = (m_SstGateway > 0 ? 6 : 5);
+
     std::stringstream ss;
-    ss << std::setprecision(5) << std::fixed << std::setfill('0');
+    ss << std::fixed << std::setfill('0');
     ss << " ----------- LOAD TABLE (Power Management) ------------"
             << std::endl;
     // FIXME - if >9 devices of a type the table will be messed up
     // FIXME - if negative values the table will be messed up
-    ss << "\t| " << "Net DRER (" << std::setw(2) << numDRERs << "): " << m_Gen
-            << "    Net DESD    (" << std::setw(2) << numDESDs << "):  " 
-            << m_Storage << " |" << std::endl;
-    ss << "\t| " << "Net Load (" << std::setw(2) << numLOADs << "): " << m_Load
-            << "    SST Gateway (" << std::setw(2) << numSSTs << "):  "
-            << m_SstGateway << " |" << std::endl;
+    ss << "\t| " << "Net DRER (" << std::setw(2) << numDRERs << "): " 
+            << std::setprecision(genPre) << m_Gen << "   Net DESD    (" 
+            << std::setw(2) << numDESDs << "):  "
+            << std::setprecision(storagePre) << m_Storage << "  |" << std::endl;
+    ss << "\t| " << "Net Load (" << std::setw(2) << numLOADs << "): " 
+            << std::setprecision(loadPre) << m_Load << "   SST Gateway ("
+            << std::setw(2) << numSSTs << "):  " 
+            << std::setprecision(sstGatePre) << m_SstGateway << "  |" 
+            << std::endl;
     ss << std::setfill(' ');
 //
 // We will hide Overall Gateway for the time being as it is useless until
@@ -464,7 +473,8 @@ void LBAgent::LoadTable()
 //
 //    ss << "\t| Normal:       " << m_Normal << "    Overall Gateway:  "
 //            << m_NetGateway << "   |" << std::endl;
-    ss << "\t| Normal:        " << m_Normal << std::setw(33) << "|" << std::endl;
+    ss << "\t| Normal:        " << m_Normal << std::setw(32) << "|" 
+            << std::endl;
     ss << "\t| ---------------------------------------------------- |"
             << std::endl;
 //
