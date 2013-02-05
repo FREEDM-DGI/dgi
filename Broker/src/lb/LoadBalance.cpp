@@ -468,7 +468,7 @@ void LBAgent::LoadTable()
     ss << "\t| " << "Net Load (" << std::setfill('0') << std::setw(2)
             << numLOADs << "): " << extraLoadSpace << std::setfill(' ')
             << std::setw(loadWidth) << m_Load << "     SST Gateway ("
-            std::setfill('0') << std::setw(2) << numSSTs << "): " 
+            << std::setfill('0') << std::setw(2) << numSSTs << "): " 
             << extraSstSpace << std::setfill(' ') << std::setw(sstGateWidth)
             << m_SstGateway << " |" << std::endl;
 //
