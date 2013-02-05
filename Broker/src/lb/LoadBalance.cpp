@@ -446,19 +446,19 @@ void LBAgent::LoadTable()
     }
 
     std::stringstream ss;
-    ss << std::setprecision(2) << std::fixed << std::setfill('0');
+    ss << std::setprecision(2) << std::fixed << std::left;
     ss << " ----------- LOAD TABLE (Power Management) ------------"
             << std::endl;
     // FIXME - if >9 devices of a type the table will be messed up
     // FIXME - if negative values the table will be messed up
-    ss << "\t| " << "Net DRER (" << std::setw(2) << numDRERs << "): " 
-            << std::setw(7) << m_Gen << "   Net DESD    (" 
-            << std::setw(2) << numDESDs << "):  "
-            << std::setw(7) << m_Storage << "  |" << std::endl;
-    ss << "\t| " << "Net Load (" << std::setw(2) << numLOADs << "): " 
-            << std::setw(7) << m_Load << "   SST Gateway ("
-            << std::setw(2) << numSSTs << "):  " 
-            << std::setw(7) << m_SstGateway << "  |" 
+    ss << "\t| " << "Net DRER (" << std::setfill('0') << std::setw(2) << numDRERs << "): " 
+            << std::setfill(' ') << std::setw(7) << m_Gen << "   Net DESD    (" 
+            << std::setfill('0') << std::setw(2) << numDESDs << "):  "
+            << std::setfill(' ') << std::setw(7) << m_Storage << "  |" << std::endl;
+    ss << "\t| " << "Net Load (" << std::setfill('0') << std::setw(2) << numLOADs << "): " 
+            << std::setfill(' ') << std::setw(7) << m_Load << "   SST Gateway ("
+            << std::setfill('0') << std::setw(2) << numSSTs << "):  " 
+            << std::setfill(' ') << std::setw(7) << m_SstGateway << "  |" 
             << std::endl;
 //
 // We will hide Overall Gateway for the time being as it is useless until
@@ -467,7 +467,7 @@ void LBAgent::LoadTable()
 //    ss << "\t| Normal:       " << m_Normal << "    Overall Gateway:  "
 //            << m_NetGateway << "   |" << std::endl;
     ss << "\t| Normal:        " << std::setw(7) << m_Normal << std::setfill(' ')
-            << std::setw(32) << "|" << std::endl;
+            << std::right << std::setw(32) << "|" << std::endl;
     ss << "\t| ---------------------------------------------------- |"
             << std::endl;
 //
