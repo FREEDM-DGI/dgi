@@ -451,9 +451,9 @@ void LBAgent::LoadTable()
             << std::endl;
     ss << "\t| " << "Net DRER (" << std::setfill('0') << std::setw(2) 
             << numDRERs << "): " << std::setfill(' ') << std::setw(6)
-            << m_Gen << "     Net DESD    (" << std::setfill('0') << std::setw(2)
-            << numDESDs << "): " << std::setfill(' ') << std::setw(6) 
-            << m_Storage << "   |" << std::endl;
+            << m_Gen << "     Net DESD    (" << std::setfill('0')
+            << std::setw(2) << numDESDs << "): " << std::setfill(' ') 
+            << std::setw(6) << m_Storage << "   |" << std::endl;
     ss << "\t| " << "Net Load (" << std::setfill('0') << std::setw(2)
             << numLOADs << "): " << std::setfill(' ') << std::setw(6) << m_Load
             << "     SST Gateway (" << std::setfill('0') << std::setw(2) 
