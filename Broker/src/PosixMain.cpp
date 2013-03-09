@@ -329,6 +329,9 @@ int main(int argc, char* argv[])
         ios.run();
     }
 
+    device::CDeviceManager::Instance().Clear();
+    device::CAdapterFactory::Instance().Stop();
+
     return 0;
 }
 

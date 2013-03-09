@@ -11,6 +11,7 @@
 /// @functions
 ///     CAdapterFactory::CAdapterFactory
 ///     CAdapterFactory::~CAdapterFactory
+///     CAdapterFactory::Stop
 ///     CAdapterFactory::RunService
 ///     CAdapterFactory::Instance
 ///     CAdapterFactory::CreateAdapter
@@ -71,6 +72,19 @@ CAdapterFactory::CAdapterFactory()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+/// Destructs the adapter factory.
+///
+/// @pre None.
+/// @post Destroys this object.
+///
+/// @limitations None.
+///////////////////////////////////////////////////////////////////////////////
+CAdapterFactory::~CAdapterFactory()
+{
+    Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 /// Stops the i/o service and waits for its thread to complete.
 ///
 /// @pre None.
@@ -78,13 +92,12 @@ CAdapterFactory::CAdapterFactory()
 ///
 /// @limitations None.
 ///////////////////////////////////////////////////////////////////////////////
-CAdapterFactory::~CAdapterFactory()
+void CAdapterFactory::Stop()
 {
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
     
+    m_adapter.clear();
     m_ios.stop();
-    Logger.Status << "Stopped the adapter i/o service." << std::endl;
-    
     Logger.Notice << "Blocking until thread finishes execution." << std::endl;
     m_thread.join();
 }
@@ -101,10 +114,10 @@ void CAdapterFactory::RunService()
 {
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
 
+    Logger.Status << "Started the adapter i/o service." << std::endl;
     boost::asio::io_service::work runner(m_ios);
     m_ios.run();
-
-    Logger.Status << "Started the adapter i/o service." << std::endl;
+    Logger.Status << "Stopped the adapter i/o service." << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

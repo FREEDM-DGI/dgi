@@ -77,6 +77,9 @@ public:
     
     /// Gets the instance of the device manager.
     static CDeviceManager & Instance();
+
+    /// Removes the registered devices.
+    void Clear() { m_devices.clear(); }
     
     /// Iterator to the first managed device.
     iterator begin();

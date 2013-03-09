@@ -188,7 +188,7 @@ listen:
     }
     else
     {
-        GetConnectionManager().Stop(CListener::ConnectionPtr(this));	
+        GetConnectionManager().Stop(boost::enable_shared_from_this<CListener>::shared_from_this());
     }
 }
 #pragma GCC diagnostic warning "-Wunused-label"
