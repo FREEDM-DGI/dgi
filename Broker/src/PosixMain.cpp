@@ -348,7 +348,7 @@ int main(int argc, char* argv[])
 BROKER_FATAL:
     broker.Stop();
     ios.run();
-    return -1;
+    return 1;
 }
 
 #endif // __unix__
