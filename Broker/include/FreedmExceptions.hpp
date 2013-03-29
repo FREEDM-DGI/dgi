@@ -57,7 +57,8 @@ protected:
 };
 
 /// Exception type for errors related to network connections.
-struct EConnectionError : virtual IFreedmException
+struct EConnectionError
+    : virtual IFreedmException
 {
     virtual const char *what() const throw()
     {
