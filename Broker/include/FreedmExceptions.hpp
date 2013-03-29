@@ -23,9 +23,6 @@
 #ifndef FREEDM_EXCEPTIONS_HPP
 #define FREEDM_EXCEPTIONS_HPP
 
-#include <cstdlib>
-#include <cstring>
-
 #include <boost/exception/all.hpp>
 
 namespace freedm {
