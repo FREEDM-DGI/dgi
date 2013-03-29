@@ -5,7 +5,7 @@
 ///
 /// @project        FREEDM DGI
 ///
-/// @description    Declarations of all FREEDM exception classes.
+/// @description    Declarations of general FREEDM exception classes.
 ///
 /// These source code files were created at Missouri University of Science and
 /// Technology, and are intended for use in teaching or research. They may be
