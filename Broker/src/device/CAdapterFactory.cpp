@@ -42,6 +42,7 @@
 
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
+#include <boost/optional.hpp>
 #include <boost/property_tree/ptree.hpp>
 
 namespace freedm {
@@ -242,8 +243,10 @@ void CAdapterFactory::InitializeAdapter(IAdapter::Pointer adapter,
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
     
     boost::property_tree::ptree subtree;
+    boost::optional<SignalValue> value;
     IBufferAdapter::Pointer buffer;
     std::set<std::string> devices;
+    CFakeAdapter::Pointer fake;
     
     std::string type, name, signal;
     std::size_t index;
@@ -254,6 +257,7 @@ void CAdapterFactory::InitializeAdapter(IAdapter::Pointer adapter,
     }
 
     buffer = boost::dynamic_pointer_cast<IBufferAdapter>(adapter);
+    fake = boost::dynamic_pointer_cast<CFakeAdapter>(adapter);
     
     // i = 0 parses state information
     // i = 1 parses command information
@@ -280,6 +284,7 @@ void CAdapterFactory::InitializeAdapter(IAdapter::Pointer adapter,
                 name    = child.second.get<std::string>("device");
                 signal  = child.second.get<std::string>("signal");
                 index   = child.second.get<std::size_t>("<xmlattr>.index");
+                value   = child.second.get_optional<SignalValue>("value");
             }
             catch( std::exception & e )
             {
@@ -306,6 +311,15 @@ void CAdapterFactory::InitializeAdapter(IAdapter::Pointer adapter,
             {
                 Logger.Debug << "Registering command info." << std::endl;
                 buffer->RegisterCommandInfo(name, signal, index);
+            }
+            else if( fake && value )
+            {
+                SignalValue oldval = fake->Get(name, signal);
+                if( oldval != SignalValue() && oldval != value.get() )
+                {
+                    throw std::runtime_error("Duplicate Initial Value");
+                }
+                fake->Set(name, signal, value.get());
             }
         }
     }
