@@ -68,6 +68,9 @@ public:
     
     /// Creates a new adapter and its associated devices.
     void CreateAdapter(const boost::property_tree::ptree & p);
+
+    /// Stops the adapter factory.
+    void Stop();
     
     /// Destructs the factory.
     ~CAdapterFactory();
