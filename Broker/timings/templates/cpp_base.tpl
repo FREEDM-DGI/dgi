@@ -36,7 +36,7 @@ $parameter_block2
     {
         Logger.Error << "Unable to timing config file: "
                 << timingsFile << std::endl;
-        std::exit(-1);
+        std::exit(1);
     }
     else
     {
