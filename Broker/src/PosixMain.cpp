@@ -49,6 +49,7 @@
 #include <boost/asio/ip/host_name.hpp> //for ip::host_name()
 #include <boost/assign/list_of.hpp>
 #include <boost/bind.hpp>
+#include <boost/exception/all.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
@@ -314,23 +315,41 @@ int main(int argc, char* argv[])
         broker.Schedule("gm", boost::bind(&gm::GMAgent::Run, &GM), false);
         broker.Schedule("lbq", boost::bind(&lb::LBAgent::Run, &LB), false);
     }
+    catch (boost::exception & e)
+    {
+        Logger.Error << "Fatal error during module initialization:\n"
+                     << boost::diagnostic_information(e) << std::endl;
+        std::exit(1);
+    }
     catch (std::exception & e)
     {
-        Logger.Error << "Exception caught in module initialization: " << e.what() << std::endl;
+        Logger.Error << "Fatal error during module initialization: "
+                     << e.what() << std::endl;
+        std::exit(1);
     }
     
     try
     {
         broker.Run();
     }
+    catch (boost::exception & e)
+    {
+        Logger.Error << "Broker threw a fatal error:\n"
+                     << boost::diagnostic_information(e) << std::endl;
+        goto BROKER_FATAL;
+    }
     catch (std::exception & e)
     {
-        Logger.Error << "Exception caught in Broker: " << e.what() << std::endl;
-        broker.Stop();
-        ios.run();
+        Logger.Error << "Broker threw a fatal error: " << e.what() << std::endl;
+        goto BROKER_FATAL;
     }
 
     return 0;
+
+BROKER_FATAL:
+    broker.Stop();
+    ios.run();
+    return 1;
 }
 
 #endif // __unix__
