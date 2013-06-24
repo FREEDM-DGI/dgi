@@ -47,6 +47,7 @@ class CBroker;
 /// Represents a single CListener from a client.
 class CListener
     : public CReliableConnection
+    , public boost::enable_shared_from_this<CListener>
 {
 
 public:
