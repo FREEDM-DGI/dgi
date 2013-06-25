@@ -78,7 +78,8 @@ void CListener::Start()
 {
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
     GetSocket().async_receive_from(boost::asio::buffer(m_buffer, CReliableConnection::MAX_PACKET_SIZE),
-            m_endpoint, boost::bind(&CListener::HandleRead, this,
+            m_endpoint, boost::bind(&CListener::HandleRead,
+            boost::enable_shared_from_this<CListener>::shared_from_this(),
             boost::asio::placeholders::error,
             boost::asio::placeholders::bytes_transferred));
 }
@@ -132,7 +133,8 @@ void CListener::HandleRead(const boost::system::error_code& e,
         {
             Logger.Error<<"Couldn't parse message XML: "<<e.what()<<std::endl;
             GetSocket().async_receive_from(boost::asio::buffer(m_buffer, CReliableConnection::MAX_PACKET_SIZE),
-                m_endpoint, boost::bind(&CListener::HandleRead, this,
+                m_endpoint, boost::bind(&CListener::HandleRead,
+                boost::enable_shared_from_this<CListener>::shared_from_this()
                 boost::asio::placeholders::error,
                 boost::asio::placeholders::bytes_transferred));
             return;
@@ -182,13 +184,14 @@ void CListener::HandleRead(const boost::system::error_code& e,
 listen:
         Logger.Debug<<"Listening for next message"<<std::endl;
         GetSocket().async_receive_from(boost::asio::buffer(m_buffer, CReliableConnection::MAX_PACKET_SIZE),
-                m_endpoint, boost::bind(&CListener::HandleRead, this,
+                m_endpoint, boost::bind(&CListener::HandleRead,
+                boost::enable_shared_from_this<CListener>::shared_from_this(),
                 boost::asio::placeholders::error,
                 boost::asio::placeholders::bytes_transferred));
     }
     else
     {
-        GetConnectionManager().Stop(CListener::ConnectionPtr(this));	
+        GetConnectionManager().Stop(boost::enable_shared_from_this<CListener>::shared_from_this());
     }
 }
 #pragma GCC diagnostic warning "-Wunused-label"
