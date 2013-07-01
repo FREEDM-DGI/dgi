@@ -21,8 +21,6 @@
 /// Science and Technology, Rolla, MO 65409 <ff@mst.edu>.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifdef __unix__
-
 #include "CBroker.hpp"
 #include "CConnectionManager.hpp"
 #include "CDispatcher.hpp"
@@ -67,7 +65,7 @@ namespace {
 CLocalLogger Logger(__FILE__);
 
 /// UUID of the DGI, currently hostname:port
-std::string generate_uuid(std::string host, std::string port)
+std::string GenerateUuid(std::string host, std::string port)
 {
     boost::algorithm::to_lower(host);
     return host + ":" + port;
@@ -77,6 +75,37 @@ std::string generate_uuid(std::string host, std::string port)
 
 /// The copyright year for this DGI release.
 const unsigned int COPYRIGHT_YEAR = 2013;
+
+/// Converts a string into a valid port number.
+unsigned short GetPort(const std::string str)
+{
+    long port;
+
+    if( str.empty() )
+    {
+        throw std::runtime_error("received empty string for a port number");
+    }
+
+    try
+    {
+        port = boost::lexical_cast<long>(str);
+        if( port < 0 || port > 65535 )
+        {
+            throw 0;
+        }
+    }
+    catch(...)
+    {
+        throw std::runtime_error("invalid port number: " + str);
+    }
+
+    if( port < 1024 )
+    {
+        throw std::runtime_error("reserved port number: " + str);
+    }
+
+    return boost::lexical_cast<unsigned short>(port);
+}
 
 /// Broker entry point
 int main(int argc, char* argv[])
@@ -88,7 +117,7 @@ int main(int argc, char* argv[])
     po::variables_map vm;
     std::ifstream ifs;
     std::string cfgFile, loggerCfgFile, timingsFile, adapterCfgFile;
-    std::string listenIP, port, hostname, id;
+    std::string listenIP, port, hostname, fport, id;
     unsigned int globalVerbosity;
 
     try
@@ -115,8 +144,10 @@ int main(int argc, char* argv[])
                 ( "port,p",
                 po::value<std::string > ( &port )->default_value("1870"),
                 "TCP port to listen for peers on" )
-                ( "adapter-config", po::value<std::string>( &adapterCfgFile ),
-                "filename of the adapter specification" )
+                ( "factory-port", po::value<std::string>(&fport),
+                "port for plug and play session protocol" )
+                ( "adapter-config", po::value<std::string>(&adapterCfgFile),
+                "filename of the adapter specification for physical devices" )
                 ( "logger-config",
                 po::value<std::string > ( &loggerCfgFile )->
                 default_value("./config/logger.cfg"),
@@ -128,7 +159,11 @@ int main(int argc, char* argv[])
                 ( "verbose,v",
                 po::value<unsigned int>( &globalVerbosity )->
                 implicit_value(5)->default_value(5),
-                "enable verbose output (optionally specify level)" );
+                "enable verbose output (optionally specify level)" )
+                ( "devices-endpoint",
+                po::value<std::string> (),
+                "restrict the endpoint to use for all network communications "
+                "from the device module to the specified IP");
 
         // Options allowed on command line
         cliOpts.add(genOpts).add(cfgOpts);
@@ -190,7 +225,7 @@ int main(int argc, char* argv[])
         }
 
         hostname = boost::asio::ip::host_name();
-        id = generate_uuid(hostname, port);
+        id = GenerateUuid(hostname, port);
         if (vm.count("uuid"))
         {
             std::cout << id << std::endl;
@@ -211,12 +246,42 @@ int main(int argc, char* argv[])
         CGlobalConfiguration::instance().SetListenAddress(listenIP);
         CGlobalConfiguration::instance().SetClockSkew(
                 boost::posix_time::milliseconds(0));
+        
+        // Specify socket endpoint address, if provided
+        if( vm.count("devices-endpoint") )
+        {
+            CGlobalConfiguration::instance().SetDevicesEndpoint(
+                vm["devices-endpoint"].as<std::string>() );
+        }
 
         // configure the adapter factory
-        if( vm.count("adapter-config") > 0 )
+        if( vm.count("factory-port") == 0 )
         {
-            Logger.Notice << "Reading the file " << adapterCfgFile
-                          << " to initialize the adapter factory." << std::endl;
+            Logger.Status << "Plug and play devices disabled." << std::endl;
+        }
+        else
+        {
+            Logger.Status << "Plug and play devices enabled." << std::endl;
+
+            try
+            {
+                CGlobalConfiguration::instance().SetFactoryPort(GetPort(fport));
+            }
+            catch(std::exception & e)
+            {
+                throw std::runtime_error("factory-port="+fport+": "+e.what());
+            }
+            device::CAdapterFactory::Instance().StartSessionProtocol();
+        }
+
+        if( vm.count("adapter-config") == 0 )
+        {
+            Logger.Status << "System will start without adapters." << std::endl;
+        }
+        else
+        {
+            Logger.Status << "Using devices in " << adapterCfgFile << std::endl;
+            
             try
             {
                 boost::property_tree::ptree adapterList;
@@ -228,25 +293,24 @@ int main(int argc, char* argv[])
                     device::CAdapterFactory::Instance().CreateAdapter(t.second);
                 }
             }
-            catch( std::exception & e )
+            catch(boost::property_tree::xml_parser_error & e)
             {
-                std::stringstream ss;
-                ss << "Failed to configure the adapter factory: " << e.what();
-                throw std::runtime_error(ss.str());
+                throw std::runtime_error("Failed to create device adapters: "
+                        + std::string(e.what()));
             }
-            Logger.Notice << "Initialized the adapter factory." << std::endl;
-        }
-        else
-        {
-            Logger.Notice << "No adapters specified." << std::endl;
+            catch(std::exception & e)
+            {
+                throw std::runtime_error(adapterCfgFile+": "+e.what());
+            }
         }
     }
     catch (std::exception & e)
     {
-        Logger.Error << "Exception caught in main during start up: " << e.what() << std::endl;
-        return 0;
+        Logger.Fatal << "Exception caught in main during start up: " << e.what() << std::endl;
+        device::CAdapterFactory::Instance().Stop();
+        return 1;
     }
-    
+
     //constructors for initial mapping
     CConnectionManager conManager;
     ConnectionPtr newConnection;
@@ -256,12 +320,12 @@ int main(int argc, char* argv[])
     CDispatcher dispatch;
     // Run server in background thread
     CBroker broker(listenIP, port, dispatch, ios, conManager);
-    
+
     // Initialize modules
     gm::GMAgent GM(id, broker);
     sc::SCAgent SC(id, broker);
     lb::LBAgent LB(id, broker);
-        
+
     try
     {
         // Instantiate and register the group management module
@@ -297,7 +361,7 @@ int main(int argc, char* argv[])
                 std::string peerhost(s.begin(), s.begin() + idx),
                         peerport(s.begin() + ( idx + 1 ), s.end());
                 // Construct the UUID of the peer
-                std::string peerid = generate_uuid(peerhost, peerport);
+                std::string peerid = GenerateUuid(peerhost, peerport);
                 // Add the UUID to the list of known hosts
                 conManager.PutHostname(peerid, peerhost, peerport);
             }
@@ -316,16 +380,19 @@ int main(int argc, char* argv[])
     }
     catch (std::exception & e)
     {
-        Logger.Error << "Exception caught in module initialization: " << e.what() << std::endl;
+        Logger.Fatal << "Exception caught in module initialization: " << e.what() << std::endl;
+        device::CAdapterFactory::Instance().Stop();
+        return 1;
     }
-    
+
     try
     {
         broker.Run();
     }
     catch (std::exception & e)
     {
-        Logger.Error << "Exception caught in Broker: " << e.what() << std::endl;
+        device::CAdapterFactory::Instance().Stop();
+        Logger.Fatal << "Exception caught in Broker: " << e.what() << std::endl;
         broker.Stop();
         ios.run();
     }
@@ -333,4 +400,3 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-#endif // __unix__

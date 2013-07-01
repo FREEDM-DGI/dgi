@@ -30,6 +30,7 @@
 /// Science and Technology, Rolla, MO 65409 <ff@mst.edu>.
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "CAdapterFactory.hpp"
 #include "CBroker.hpp"
 #include "CLogger.hpp"
 #include "CGlobalPeerList.hpp"
@@ -80,7 +81,7 @@ CBroker::CBroker(const std::string& p_address, const std::string& p_port,
       m_newConnection(new CListener(m_ioService, m_connManager, *this, m_conMan.GetUUID())),
       m_phasetimer(m_ios),
       m_synchronizer(*this),
-      m_signals(m_ios,SIGINT)
+      m_signals(m_ios,SIGINT,SIGTERM)
 {
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
     // Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
@@ -161,14 +162,17 @@ boost::asio::io_service& CBroker::GetIOService()
 /// @pre The ioservice is running and processing tasks.
 /// @post The command to stop the ioservice has been placed in the service's
 ///        task queue.
+/// @param signum positive if called from a signal handler, or 0 otherwise
 ///////////////////////////////////////////////////////////////////////////////
-void CBroker::Stop()
+void CBroker::Stop(unsigned int signum)
 {
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
     // Post a call to the stop function so that CBroker::stop() is safe to call
     // from any thread.
     m_synchronizer.Stop();
-    m_ioService.post(boost::bind(&CBroker::HandleStop, this));
+    m_ioService.post(boost::bind(&CBroker::HandleStop, this, signum));
+    // Unrelated to our ioservice, but must be done.
+    device::CAdapterFactory::Instance().Stop();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -181,8 +185,7 @@ void CBroker::HandleSignal(const boost::system::error_code& error, int parameter
 {
     if(!error)
     {
-        Logger.Fatal<<"Caught signal "<<parameter<<". Shutting Down..."<<std::endl;
-        Stop();
+        Stop(parameter);
     }
 }
 
@@ -192,15 +195,24 @@ void CBroker::HandleSignal(const boost::system::error_code& error, int parameter
 ///              Services.
 /// @pre The ioservice is running.
 /// @post The ioservice is stopped.
+/// @param signum positive if called from a signal handler, or 0 otherwise
 ///////////////////////////////////////////////////////////////////////////////
-void CBroker::HandleStop()
+void CBroker::HandleStop(unsigned int signum)
 {
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
+
     // The server is stopped by canceling all outstanding asynchronous
     // operations. Once all operations have finished the io_service::run() call
     // will exit.
     m_connManager.StopAll();
-    m_ioService.stop(); 
+    m_ioService.stop();
+
+    if (signum > 0)
+    {
+        Logger.Fatal<<"Caught signal "<<signum<<". Shutting Down..."<<std::endl;
+        m_signals.remove(signum);
+        raise(signum);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
