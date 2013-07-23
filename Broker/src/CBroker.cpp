@@ -500,7 +500,6 @@ void CBroker::Worker()
     if(m_phase >= m_modules.size())
     {
         m_busy = false;
-        schlock.unlock();
         return;
     }
     std::string active = m_modules[m_phase].first;
@@ -520,7 +519,6 @@ void CBroker::Worker()
     else
     {
         m_busy = false;
-        schlock.unlock();
         return;
     }
     // Schedule the worker again:
