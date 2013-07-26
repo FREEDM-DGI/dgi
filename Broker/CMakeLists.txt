@@ -32,8 +32,7 @@ message("This project uses custom CMake settings:"
     "\n\tChange a setting with -DSETTING=ON/OFF")
 
 # find the required boost libraries
-find_package(Boost REQUIRED COMPONENTS system thread program_options 
-             serialization date_time)
+find_package(Boost REQUIRED COMPONENTS system thread program_options date_time)
 
 # add the boost libraries to the project
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
@@ -78,7 +77,6 @@ target_link_libraries(
     device
     ${Boost_THREAD_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
-    ${Boost_SERIALIZATION_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_DATE_TIME_LIBRARY}
 )
