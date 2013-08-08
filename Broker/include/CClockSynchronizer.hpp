@@ -49,9 +49,9 @@ class CClockSynchronizer
     CClockSynchronizer(CBroker &broker);
     /// Destructor for module
     ~CClockSynchronizer();
-    /// Reciever
+    /// Receiver
     void HandleExchangeResponse(MessagePtr msg, PeerNodePtr peer);
-    /// Reciever
+    /// Receiver
     void HandleExchange(MessagePtr msg, PeerNodePtr peer);
     /// Broadcaster    
     void Exchange(const boost::system::error_code& err );    
