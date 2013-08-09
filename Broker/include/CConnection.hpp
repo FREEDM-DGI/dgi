@@ -48,7 +48,7 @@ class IProtocol;
 struct EConnectionError
     : virtual std::runtime_error
 {
-    EConnectionError(const std::string& what)
+    explicit EConnectionError(const std::string& what)
         : std::runtime_error(what) { }
 };
 
@@ -62,7 +62,7 @@ public:
     typedef boost::shared_ptr<CConnection> ConnectionPtr;
 
     /// Construct a CConnection with the given io_service.
-    explicit CConnection(boost::asio::io_service& p_ioService,
+    CConnection(boost::asio::io_service& p_ioService,
             CConnectionManager& p_manager, CBroker& p_broker,
             std::string uuid);
 
