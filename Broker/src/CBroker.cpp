@@ -385,7 +385,6 @@ int CBroker::Schedule(ModuleIdent m, BoundScheduleable x, bool start_worker)
     return 0;
 }
 
-#pragma GCC diagnostic ignored "-Wunused-parameter"
 ///////////////////////////////////////////////////////////////////////////////
 /// @fn CBroker::ChangePhase
 /// @description This task will mark to the schedule that it is time to change
@@ -393,7 +392,7 @@ int CBroker::Schedule(ModuleIdent m, BoundScheduleable x, bool start_worker)
 /// @pre None
 /// @post The phase has been changed.
 ///////////////////////////////////////////////////////////////////////////////
-void CBroker::ChangePhase(const boost::system::error_code &err)
+void CBroker::ChangePhase(const boost::system::error_code & /*err*/)
 {
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
     if(m_modules.size() == 0)
@@ -490,7 +489,6 @@ void CBroker::ChangePhase(const boost::system::error_code &err)
         boost::asio::placeholders::error));
     m_schmutex.unlock();
 }
-#pragma GCC diagnostic warning "-Wunused-parameter"
 
 ///////////////////////////////////////////////////////////////////////////////
 /// @fn CBroker::TimeRemaining
