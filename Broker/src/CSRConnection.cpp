@@ -104,8 +104,8 @@ void CSRConnection::Send(CMessage msg)
     msg.SetSequenceNumber(msgseq);
     m_outseq = (m_outseq+1) % SEQUENCE_MODULO;
 
-    msg.SetSourceUUID(GetConnection()->GetConnectionManager().GetUUID());
-    msg.SetSourceHostname(GetConnection()->GetConnectionManager().GetHostname());
+    msg.SetSourceUUID(CConnectionManager::Instance().GetUUID());
+    msg.SetSourceHostname(CConnectionManager::Instance().GetHostname());
     msg.SetProtocol(GetIdentifier());
     msg.SetSendTimestampNow();
     if(!msg.HasExpireTime())
@@ -331,9 +331,9 @@ bool CSRConnection::Receive(const CMessage &msg)
         //If the connection hasn't been synchronized, we want to
         //tell them it is a bad request so they know they need to sync.
         freedm::broker::CMessage outmsg;
-        // Presumably, if we are here, the connection is registered 
-        outmsg.SetSourceUUID(GetConnection()->GetConnectionManager().GetUUID());
-        outmsg.SetSourceHostname(GetConnection()->GetConnectionManager().GetHostname());
+        // Presumably, if we are here, the connection is registered
+        outmsg.SetSourceUUID(CConnectionManager::Instance().GetUUID());
+        outmsg.SetSourceHostname(CConnectionManager::Instance().GetHostname());
         outmsg.SetStatus(freedm::broker::CMessage::BadRequest);
         outmsg.SetSequenceNumber(m_inresyncs%SEQUENCE_MODULO);
         outmsg.SetSendTimestamp(msg.GetSendTimestamp());
@@ -397,9 +397,9 @@ void CSRConnection::SendACK(const CMessage &msg)
     freedm::broker::CMessage outmsg;
     ptree pp;
     pp.put("src.hash",msg.GetHash());
-    // Presumably, if we are here, the connection is registered 
-    outmsg.SetSourceUUID(GetConnection()->GetConnectionManager().GetUUID());
-    outmsg.SetSourceHostname(GetConnection()->GetConnectionManager().GetHostname());
+    // Presumably, if we are here, the connection is registered
+    outmsg.SetSourceUUID(CConnectionManager::Instance().GetUUID());
+    outmsg.SetSourceHostname(CConnectionManager::Instance().GetHostname());
     outmsg.SetStatus(freedm::broker::CMessage::Accepted);
     outmsg.SetSequenceNumber(seq);
     outmsg.SetSendTimestampNow();
@@ -451,9 +451,9 @@ void CSRConnection::SendSYN()
             seq--;
         }
     }
-    // Presumably, if we are here, the connection is registered 
-    outmsg.SetSourceUUID(GetConnection()->GetConnectionManager().GetUUID());
-    outmsg.SetSourceHostname(GetConnection()->GetConnectionManager().GetHostname());
+    // Presumably, if we are here, the connection is registered
+    outmsg.SetSourceUUID(CConnectionManager::Instance().GetUUID());
+    outmsg.SetSourceHostname(CConnectionManager::Instance().GetHostname());
     outmsg.SetStatus(freedm::broker::CMessage::Created);
     outmsg.SetSequenceNumber(seq);
     outmsg.SetSendTimestampNow();

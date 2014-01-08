@@ -65,9 +65,8 @@ void CSUConnection::Send(CMessage msg)
     msg.SetSequenceNumber(msgseq);
     m_outseq = (m_outseq+1) % SEQUENCE_MODULO;
 
-    msg.SetSourceUUID(GetConnection()->GetConnectionManager().GetUUID());
-    msg.SetSourceHostname(
-            GetConnection()->GetConnectionManager().GetHostname());
+    msg.SetSourceUUID(CConnectionManager::Instance().GetUUID());
+    msg.SetSourceHostname(CConnectionManager::Instance().GetHostname());
     msg.SetProtocol(GetIdentifier());
     msg.SetSendTimestampNow();
 
@@ -172,9 +171,9 @@ void CSUConnection::SendACK(const CMessage &msg)
 {
     unsigned int seq = msg.GetSequenceNumber();
     freedm::broker::CMessage outmsg;
-    // Presumably, if we are here, the connection is registered 
-    outmsg.SetSourceUUID(GetConnection()->GetConnectionManager().GetUUID());
-    outmsg.SetSourceHostname(GetConnection()->GetConnectionManager().GetHostname());
+    // Presumably, if we are here, the connection is registered
+    outmsg.SetSourceUUID(CConnectionManager::Instance().GetUUID());
+    outmsg.SetSourceHostname(CConnectionManager::Instance().GetHostname());
     outmsg.SetStatus(freedm::broker::CMessage::Accepted);
     outmsg.SetSequenceNumber(seq);
     outmsg.SetProtocol(GetIdentifier());
