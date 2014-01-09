@@ -53,9 +53,6 @@ public:
     /// Get the socket associated with the CConnection.
     boost::asio::ip::udp::socket& GetSocket();
 
-    /// Start the first asynchronous operation for the CConnection.
-    virtual void Start() = 0;
-
     /// Get associated UUID
     std::string GetUUID();
 

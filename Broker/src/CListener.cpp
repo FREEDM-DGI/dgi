@@ -63,16 +63,27 @@ CListener::CListener()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+/// Access the singleton instance of the CListener
+///////////////////////////////////////////////////////////////////////////////
+CListener& CListener::Instance()
+{
+    static CListener listener;
+    return listener;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 /// @fn CListener::Start
 /// @description: Starts the receive routine which causes this socket to behave
 ///   as a listener.
 /// @pre The object is initialized.
 /// @post The connection is asynchronously waiting for messages.
+/// @param endpoint the endpoint for the listener to listen on
 ///////////////////////////////////////////////////////////////////////////////
-
-void CListener::Start()
+void CListener::Start(boost::asio::ip::udp::endpoint& endpoint)
 {
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
+    GetSocket().open(endpoint.protocol());
+    GetSocket().bind(endpoint);
     GetSocket().async_receive_from(boost::asio::buffer(m_buffer, CReliableConnection::MAX_PACKET_SIZE),
             m_endpoint, boost::bind(&CListener::HandleRead, this,
             boost::asio::placeholders::error,

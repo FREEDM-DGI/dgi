@@ -59,9 +59,6 @@ public:
     /// Typedef for the map which handles uuid to connection 
     typedef boost::bimap<std::string, ConnectionPtr> connectionmap;
 
-    /// Add the specified connection to the manager and start it.
-    void Start(CListener::ConnectionPtr c);
-
     /// Access the singleton instance of the connection manager
     static CConnectionManager& Instance();
 
@@ -122,9 +119,7 @@ private:
     /// Host/port of this node.
     SRemoteHost m_hostname;
     /// Forward map (UUID->Connection)
-    connectionmap   m_connections;
-    /// Incoming messages channel
-    CListener::ConnectionPtr m_inchannel;
+    connectionmap m_connections;
     /// Node UUID
     std::string m_uuid;
     /// Mutex for protecting the handler maps above

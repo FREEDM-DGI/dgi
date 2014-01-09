@@ -57,20 +57,6 @@ CConnectionManager::CConnectionManager()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/// @fn CConnectionManager::Start
-/// @description Performs initialization of a connection.
-/// @pre The connection c has not been started.
-/// @post The connection c has been started.
-/// @param c A connection pointer that has not been started.
-///////////////////////////////////////////////////////////////////////////////
-void CConnectionManager::Start (CListener::ConnectionPtr c)
-{
-    Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
-    c->Start();
-    m_inchannel = c; 
-}
-
-///////////////////////////////////////////////////////////////////////////////
 /// Access the singleton instance of the connection manager
 ///////////////////////////////////////////////////////////////////////////////
 CConnectionManager& CConnectionManager::Instance()
@@ -248,7 +234,7 @@ ConnectionPtr CConnectionManager::GetConnectionByUUID(std::string uuid_)
 
     // Initiate the UDP connection
     Logger.Debug<<"Computing remote endpoint"<<std::endl;
-    boost::asio::ip::udp::resolver resolver(m_inchannel->GetIOService());
+    boost::asio::ip::udp::resolver resolver(CBroker::Instance().GetIOService());
     boost::asio::ip::udp::resolver::query query( s_, port);
     boost::asio::ip::udp::resolver::iterator it;
     try
@@ -304,7 +290,7 @@ void CConnectionManager::LoadNetworkConfig()
     boost::property_tree::ptree pt;
     boost::property_tree::read_xml("network.xml",pt);    
     int inreliability = pt.get("network.incoming.reliability",100);
-    m_inchannel->SetReliability(inreliability); 
+    CListener::Instance().SetReliability(inreliability);
     BOOST_FOREACH(ptree::value_type & child, pt.get_child("network.outgoing"))
     {
         std::string uuid = child.second.get<std::string>("<xmlattr>.uuid");
