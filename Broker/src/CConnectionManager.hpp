@@ -76,9 +76,6 @@ public:
 
     /// Stop the specified connection.
     void Stop(ConnectionPtr c);
-    
-    /// Stop the specified connection
-    void Stop(CListener::ConnectionPtr c);
 
     /// Stop all connections.
     void StopAll();

@@ -80,20 +80,6 @@ void CListener::Start()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/// @fn CListener::Stop
-/// @description Stops the socket and cancels the timeout timer. Does not
-///   need to be called on a listening connection (ie one that has had
-///   Start() called on it.
-/// @pre Any initialized CConnection object.
-/// @post The underlying socket is closed and the message timeout timer is
-///        cancelled.
-///////////////////////////////////////////////////////////////////////////////
-void CListener::Stop()
-{
-    Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
-}
- 
-///////////////////////////////////////////////////////////////////////////////
 /// @fn CListener::HandleRead
 /// @description The callback which accepts messages from the remote sender.
 /// @param e The errorcode if any associated.
@@ -182,10 +168,6 @@ listen:
                 m_endpoint, boost::bind(&CListener::HandleRead, this,
                 boost::asio::placeholders::error,
                 boost::asio::placeholders::bytes_transferred));
-    }
-    else
-    {
-        CConnectionManager::Instance().Stop(CListener::ConnectionPtr(this));
     }
 }
 

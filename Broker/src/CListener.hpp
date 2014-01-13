@@ -56,9 +56,6 @@ public:
     /// Start the first asynchronous operation for the CConnection.
     void Start();
 
-    /// Stop all asynchronous operations associated with the CConnection.
-    void Stop();
-
     /// Get Remote UUID
     std::string GetUUID() { return m_uuid; };
 private:

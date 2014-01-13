@@ -152,20 +152,6 @@ void CConnectionManager::Stop (CConnection::ConnectionPtr c)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/// @fn CConnectionManager::Stop
-/// @description Stops the listener connection
-/// @pre The connection is the listener connection.
-/// @post The connection is closed.
-/// @param c the connection pointer to stop.
-///////////////////////////////////////////////////////////////////////////////
-void CConnectionManager::Stop (CListener::ConnectionPtr c)
-{
-    Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
-    c->Stop();
-    //TODO: Make the whole thing terminate if the listner says stop.
-}
-
-///////////////////////////////////////////////////////////////////////////////
 /// @fn CConnectionManager::StopAll
 /// @description Repeatedly pops a connection and stops it until the forward
 ///               connection map is empty, then clears the reverse map.
@@ -181,7 +167,6 @@ void CConnectionManager::StopAll ()
       Stop((*m_connections.left.begin()).second); //Side effect of stop should make this map smaller
     }
     m_connections.clear();
-    Stop(m_inchannel);
     Logger.Debug << "All Connections Closed" << std::endl;
 }
 
