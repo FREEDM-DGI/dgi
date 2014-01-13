@@ -54,7 +54,7 @@ CDeviceSst::CDeviceSst(const std::string identifier, IAdapter::Pointer adapter)
     : IDevice(identifier, adapter)
 {
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
-    
+
     m_StateSet.insert("gateway");
     m_CommandSet.insert("gateway");
 }
@@ -106,19 +106,19 @@ SignalValue CDeviceSst::GetGateway() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Increases the gateway value of this SST by the passed amount.
+/// Sets the gateway value of this SST.
 ///
 /// @pre None.
 /// @post Determines the current gateway with CDeviceSst::GetGateway.
 /// @post Calls IAdapter::Set with the signal "storage".
-/// @param v The amount to set to the current gateway.
+/// @param gateway The amount to set to the current gateway.
 ///
 /// @limitations The gateway increase will take some time to manifest.
 ////////////////////////////////////////////////////////////////////////////////
-void CDeviceSst::SetGateway(const SignalValue v)
+void CDeviceSst::SetGateway(const SignalValue gateway)
 {
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
-    Set("gateway", v);
+    Set("gateway", gateway);
 }
 
 } // namespace device
