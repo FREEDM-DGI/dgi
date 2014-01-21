@@ -95,8 +95,9 @@ CBroker::~CBroker()
 
 ///////////////////////////////////////////////////////////////////////////////
 /// @fn CBroker::Run()
-/// @description Runs the ioservice until it is out of work. (That should only
-///              happen if a signal is received.)
+/// @description Starts the adapter factory. Runs the ioservice until it is out
+///              of work. (That should only happen if a signal is received.)
+///              Runs the clock synchronizer.
 /// @pre  The ioservice has some schedule of jobs waiting to be performed (so
 ///       it doesn't exit immediately)
 /// @post The ioservice has stopped.
