@@ -49,6 +49,7 @@
 #include "gm/GroupManagement.hpp"
 #include "CDeviceManager.hpp"
 #include "CTimings.hpp"
+#include "CGlobalConfiguration.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -119,8 +120,6 @@ LBAgent::LBAgent(std::string uuid_):
     m_sstExists = false;
     // First time flag for invariant
     m_firstTimeInvariant = true;
-    // Flag to indicate power migration is in progress
-    m_inProgress = false;
     // Initialize imbalanced power K (predict the future power migration)
     m_outstandingMessages = 1;
     m_actuallyread = true;
@@ -485,10 +484,6 @@ void LBAgent::LoadTable()
     m_Storage = CDeviceManager::Instance().GetNetValue("Desd", "storage");
     m_Load = CDeviceManager::Instance().GetNetValue("Load", "drain");
     m_SstGateway = CDeviceManager::Instance().GetNetValue("Sst", "gateway");
-
-    //calculate m_grossPowerFlow for test one supply and one demand
-    m_grossPowerFlow = 1000*m_SstGateway*m_SstGateway*1000;
-    Logger.Status << "-----The m_grossPowerFlow is  " << m_grossPowerFlow << std::endl;
 
     if(m_actuallyread)
     {
@@ -866,9 +861,14 @@ void LBAgent::HandleYes(MessagePtr /*msg*/, PeerNodePtr peer)
     ss_.clear();
     ss_.str("drafting");
     m_.SetHandler("lb."+ ss_.str());
+    
+    //Get invariant check flag from freedm.cfg
+    std::string invset = CGlobalConfiguration::Instance().GetInvariantCheckFlag();
+    // If invaraint check is not set in freedm.cfg, no invariant check will be performed.
+    bool invCheck = (invset == "0")? true : InvariantCheck();
 
     //Its better to check your status again before initiating drafting
-    if( peer->GetUUID() != GetUUID() && LBAgent::SUPPLY == m_Status && InvariantCheck() )
+    if( peer->GetUUID() != GetUUID() && LBAgent::SUPPLY == m_Status && invCheck )
     {
         try
         {
@@ -921,14 +921,15 @@ bool LBAgent::CyberInvariant()
     //power invariant
     bool C1 = false;
     Logger.Status << "m_initialGateway is " << m_initialGateway << " and m_aggregateGateway " << m_aggregateGateway << std::endl;
-    
-    if ((m_initialGateway - m_aggregateGateway) < 1 && (m_initialGateway - m_aggregateGateway) > -1)
+    // there is an oscillation range for gateway 
+    if ((m_initialGateway - m_aggregateGateway) < 2 && (m_initialGateway - m_aggregateGateway) > -2)
         C1 = true;
         
     Logger.Info << "C1 in cyber invariant is " << (C1 ? "true" : "false") << std::endl;
     //knapsack invariant
-    bool C2 = (m_prevDemand - m_highestDemand >= 0);
-        
+    //there is an oscillation range for gateway
+    bool C2 = ((m_prevDemand - m_highestDemand > 0) || (m_prevDemand - m_highestDemand < 1));
+    Logger.Info << "m_prevDemand is " << m_prevDemand << " m_hightestDemand is " << m_highestDemand << std::endl;
     Logger.Info << "C2 in cyber invariant is " << (C2 ? "true" : "false") << std::endl;
     return C1*C2;
 }
@@ -948,9 +949,11 @@ bool LBAgent::PhysicalInvariant()
     //Obtaining frequency from physical system
     m_frequency = device::CDeviceManager::Instance().GetNetValue("Omega", "frequency");
     const float OmegaNon = 376.8;
-
+    // In this simple test, all the power is concentrated on a single SST
+    m_grossPowerFlow = m_outstandingMessages;
+    Logger.Info << "The gross power flow is " << m_grossPowerFlow << std::endl;
     // Check left side and right side of physical invariant formula
-    double left = (0.08*m_frequency + 0.01)*(m_frequency-OmegaNon)*(m_frequency-OmegaNon) + (m_frequency-OmegaNon)*(5.001e-8*m_grossPowerFlow);
+    double left = (0.08*m_frequency + 0.01)*(m_frequency-OmegaNon)*(m_frequency-OmegaNon) + (m_frequency-OmegaNon)*(5.001e-8*m_grossPowerFlow*m_grossPowerFlow*10e6);
     double right = P_Migrate*m_outstandingMessages*(m_frequency - OmegaNon);
     Logger.Status << "Physical invaraint left side of formula is " << left << " and right side of formula is " << right << std::endl;
     
@@ -996,9 +999,8 @@ void LBAgent::HandleDrafting(MessagePtr /*msg*/, PeerNodePtr peer)
         ss_ << m_DemandVal;
         m_.m_submessages.put("lb.value", ss_.str());
 
-        if( peer->GetUUID() != GetUUID() && LBAgent::DEMAND == m_Status && !m_inProgress )
+        if( peer->GetUUID() != GetUUID() && LBAgent::DEMAND == m_Status)
         {
-	    m_inProgress = true;
             try
             {
                 peer->Send(m_);
@@ -1022,7 +1024,6 @@ void LBAgent::HandleDrafting(MessagePtr /*msg*/, PeerNodePtr peer)
         {
             //Nothing; Local Load change from Demand state (Migration will not proceed)
         }
-	m_inProgress = false;
     }
 }
 
@@ -1044,9 +1045,8 @@ void LBAgent::HandleAccept(MessagePtr msg, PeerNodePtr peer)
     Logger.Notice << " Draft Accept message received from: " << peer->GetUUID()
                    << " with demand of "<< DemValue << std::endl;
 
-    if( LBAgent::SUPPLY == m_Status && !m_inProgress)
+    if( LBAgent::SUPPLY == m_Status)
     {
-	m_inProgress = true;
         // Make necessary power setting accordingly to allow power migration
         Logger.Notice<<"Migrating power on request from: "<< peer->GetUUID() << std::endl;
 	// !!!NOTE: You may use Step_PStar() or PStar(DemandValue) currently
@@ -1062,7 +1062,6 @@ void LBAgent::HandleAccept(MessagePtr msg, PeerNodePtr peer)
     {
         Logger.Warn << "Unexpected Accept message" << std::endl;
     }
-    m_inProgress = false;
 }
 
 void LBAgent::HandleCollectedState(MessagePtr msg, PeerNodePtr /*peer*/)
@@ -1073,7 +1072,7 @@ void LBAgent::HandleCollectedState(MessagePtr msg, PeerNodePtr /*peer*/)
     // --------------------------------------------------------------
     int peercount=0; // number of peers *with devices*
     m_aggregateGateway=0;
-    m_grossPowerFlow = 0;
+
     ptree &pt = msg->GetSubMessages();
     m_highestDemand = std::numeric_limits<double>::min();
     if(pt.get_child_optional("CollectedState.gateway"))
@@ -1138,16 +1137,6 @@ void LBAgent::HandleCollectedState(MessagePtr msg, PeerNodePtr /*peer*/)
              }
         }
     }
-    
-    // If first time checking invariant, assign aggregate gateway to m_initialGateway
-    if (m_firstTimeInvariant)
-    {
-        m_initialGateway = m_aggregateGateway;
-        m_prevDemand = m_highestDemand;
-        m_firstTimeInvariant = false;
-    }
-    
-    Logger.Status << "In collected state, m_initialGateway is " << m_initialGateway << "and m_aggregateGateway is " << m_aggregateGateway  << std::endl;
 
     if(peercount != 0)
     {
@@ -1158,6 +1147,26 @@ void LBAgent::HandleCollectedState(MessagePtr msg, PeerNodePtr /*peer*/)
     {
         m_Normal = 0;
     }
+
+    // If first time checking invariant, assign aggregate gateway to m_initialGateway
+    if (m_firstTimeInvariant)
+    {
+        m_initialGateway = m_aggregateGateway;
+        m_prevDemand = m_highestDemand;
+        m_prevNormal = m_Normal;
+        m_firstTimeInvariant = false;
+    }
+
+    // If the normal is changed, then assign aggreate gateway to m_initialGateway
+    if ((m_prevNormal - m_Normal) > -1 && (m_prevNormal - m_Normal ) < 1)
+    {
+        m_initialGateway = m_aggregateGateway;
+        m_prevNormal = m_Normal;
+    }    
+    Logger.Info << "In collected state, previous normal is " << m_prevNormal << " and m_Normal is " << m_Normal  << std::endl;
+
+    Logger.Info << "In collected state, m_initialGateway is " << m_initialGateway << " and m_aggregateGateway is " << m_aggregateGateway  << std::endl;
+
     //Check Cyber Invariant
     if (CyberInvariant())
         m_cyberInvariant = 1;
