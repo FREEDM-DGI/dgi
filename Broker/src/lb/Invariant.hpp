@@ -36,8 +36,8 @@
 namespace freedm {
 namespace broker {
 
-class Invariant{
-
+class Invariant
+{
   private:
     typedef lb::lbAgent::State State;
     State m_State;
