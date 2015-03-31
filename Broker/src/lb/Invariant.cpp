@@ -37,9 +37,14 @@ CLocalLogger Logger(__FILE__);
 
 // Constructor, handles all invariant input variables for a
 // invariant() functor call with fewest possible parameters.
-Invariant::Invariant()
+Invariant::Invariant(State state, float migrationStep, float migrationTotal, 
+              std::map<std::string, float>& migrationReport, float generatorPower)
 {
-// Will store constructor values for custom invariants
+  m_state = state;
+  m_MigrationStep = migrationStep;
+  m_MigrationTotal = migrationTotal;
+  m_MigrationReport = migrationReport;
+  m_GeneratorPower = generatorPower;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -54,39 +59,46 @@ bool Invariant::operator()()
 {
   Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
 
-  const float OMEGA_STEADY_STATE = 376.8;
-  const int SCALING_FACTOR = 1000;
-
   bool result = true;
-  std::set<device::CDevice::Pointer> container;
-  container = device::CDeviceManager::Instance().GetDevicesOfType("Omega");
 
-  if(container.size() > 0 && CGlobalConfiguration::Instance().GetInvariantCheck())
+  if(!CGlobalConfiguration::Instance().GetInvariantCheck())
   {
-    if(container.size() > 1)
+    Logger.Info << "Skipped invariant check, disabled." << std::endl;
+  }
+  else
+  {
+    float total_power_difference = m_MigrationTotal;
+
+    BOOST_FOREACH(float power_difference, m_MigrationReport | boost::adaptors::map_values)
     {
-      Logger.Warn << "Multiple attached frequency devices." << std::endl;
+      total_power_difference += power_difference;
     }
-    float w  = (*container.begin())->GetState("frequency");
-    float P  = SCALING_FACTOR * m_PowerDifferential;
-    float dK = SCALING_FACTOR * (m_PowerDifferential + m_MigrationStep);
-    float freq_diff = w - OMEGA_STEADY_STATE;
 
-    Logger.Info << "Invariant Variables:"
-                << "\n\tw  = " << w
-                << "\n\tP  = " << P
-                << "\n\tdK = " << dK << std::endl;
+    Logger.Debug << "Invariant Variables:"
+        << "\n\tEstimated Generator Power: " << m_GeneratorPower
+        << "\n\tExpected Power Difference: " << total_power_difference
+        << "\n\tMigration Step Size: " << m_MigrationStep
+        << "\n\tMax Generator Power: " << GENERATOR_MAX_POWER << std::endl;
 
-    result &= freq_diff*freq_diff*(0.1*w+0.008)+freq_diff*((5.001e-8)*P*P) > freq_diff*dK;
+    if(m_State == LBAgent::SUPPLY)
+    {
+       Logger.Debug << "Checking the supply invariant." << std::endl;
+       result &= m_GeneratorPower - total_power_difference >= m_MigrationStep;
+    }
+    if(m_State == LBAgent::DEMAND)
+    {
+      Logger.Debug << "Checking the demand invariant." << std::endl;
+      result &= m_GeneratorPower - total_power_difference <= GENERATOR_MAX_POWER;
+    }
 
     if(!result)
     {
       Logger.Info << "The physical invariant is false." << std::endl;
     }
-
   }
 
   return result;
+
 }
 
 }// broker

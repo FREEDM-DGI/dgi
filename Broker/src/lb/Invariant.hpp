@@ -40,15 +40,16 @@ class Invariant{
 
   private:
     typedef lb::lbAgent::State State;
-    int m_estimated_generator_power;
-    float m_total_power_difference;
-    int m_migration_step_size;
-    int MAX_GENERATOR_POWER;
-    bool result = true;
+    State m_State;
+    float m_MigrationStep;
+    float m_MigrationTotal;
+    std::map<std::string, float> m_MigrationReport;
+    float m_GeneratorPower;
 
   public:
     //Constructor
-    Invariant();
+    Invariant(State state, float migrationStep, float migrationTotal, 
+              std::map<std::string, float>& migrationReport, float generatorPower);
 
     //Overwrite () operator for quick function call in load balance.
     bool operator() ();
