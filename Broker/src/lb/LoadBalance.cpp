@@ -578,7 +578,8 @@ ModuleMessage LBAgent::MessageDraftRequest()
 void LBAgent::SendDraftRequest()
 {
     // Declares InvariantCheck function object
-    Invariant InvariantCheck;
+    Invariant InvariantCheck(m_State, m_MigrationStep, m_MigrationTotal, m_MigrationReport,
+        m_GeneratorPower);
 
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
 
