@@ -824,6 +824,9 @@ void LBAgent::SendDraftSelect(CPeerNode peer, float step)
 ///////////////////////////////////////////////////////////////////////////////
 void LBAgent::HandleDraftSelect(const DraftSelectMessage & m, CPeerNode peer)
 {
+    Invariant InvariantCheck(m_state, m_MigrationStep, m_MigrationTotal, 
+                             m_MigrationReport, m_GeneratorPower);
+
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
 
     try
@@ -912,6 +915,9 @@ ModuleMessage LBAgent::MessageTooLate(float amount)
 ///////////////////////////////////////////////////////////////////////////////
 void LBAgent::HandleDraftAccept(const DraftAcceptMessage & m, CPeerNode /* peer */ )
 {
+    Invariant InvariantCheck(m_state, m_MigrationStep, m_MigrationTotal,
+                             m_MigrationReport, m_GeneratorPower);
+
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
     if(CGlobalConfiguration::Instance().GetMaliciousFlag())
     {
@@ -1213,57 +1219,6 @@ void LBAgent::Synchronize(float k)
 
     Logger.Info << "Reset Gross Power Flow: " << k << std::endl;
     Logger.Info << "Reset Predicted Gateway: " << m_Gateway << std::endl;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-/// InvariantCheck
-/// @description Evaluates the current truth of the physical invariant
-/// @pre none
-/// @post calculate the physical invariant using the Generator device
-/// @return the truth value of the physical invariant 
-///////////////////////////////////////////////////////////////////////////////
-bool LBAgent::InvariantCheck()
-{
-    Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
-
-    bool result = true;
-
-    if(!CGlobalConfiguration::Instance().GetInvariantCheck())
-    {
-        Logger.Info << "Skipped invariant check, disabled." << std::endl;
-    }
-    else
-    {
-        float total_power_difference = m_MigrationTotal;
-        BOOST_FOREACH(float power_difference, m_MigrationReport | boost::adaptors::map_values)
-        {
-            total_power_difference += power_difference;
-        }
-
-        Logger.Debug << "Invariant Variables:"
-            << "\n\tEstimated Generator Power: " << m_GeneratorPower
-            << "\n\tExpected Power Difference: " << total_power_difference
-            << "\n\tMigration Step Size:       " << m_MigrationStep
-            << "\n\tMax Generator Power:       " << GENERATOR_MAX_POWER << std::endl;
-    
-        if(m_State == LBAgent::SUPPLY)
-        {
-            Logger.Debug << "Checking the supply invariant." << std::endl;
-            result &= m_GeneratorPower - total_power_difference >= m_MigrationStep;
-        }
-        if(m_State == LBAgent::DEMAND)
-        {
-            Logger.Debug << "Checking the demand invariant." << std::endl;
-            result &= m_GeneratorPower - total_power_difference <= GENERATOR_MAX_POWER;
-        }
-
-        if(!result)
-        {
-            Logger.Info << "The physical invariant is false." << std::endl;
-        }
-    }
-
-    return result;
 }
 
 } // namespace lb
