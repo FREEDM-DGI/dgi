@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
-/// @file               Invariant.hpp
+/// @file               ReversePowerFlowInvariant.hpp
 ///
+/// @author             Thomas Roth <tprfh7@mst.edu>
 /// @author             Daniel Grooms <dagn9c@mst.edu>
 ///
 /// @project            FREEDM DGI
@@ -22,11 +23,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef INVARIANT_HPP
-#define INVARIANT_HPP
+#ifndef REVERSEPOWERFLOWINVARIANT_HPP
+#define REVERSEPOWERFLOWINVARIANT_HPP
 
 #include "messages/ModuleMessage.pb.h"
 #include "lb/LoadBalance.hpp"
+#include "Invariant.hpp"
 
 #include <string>
 #include <boost/shared_ptr.hpp>
@@ -34,20 +36,28 @@
 namespace freedm {
 namespace broker {
 
-/// Abstract base class for Invariant function objects
-class Invariant
+class ReversePowerFlowInvariant: public Invariant
 {
+private:
+    typedef lb::lbAgent::State State;
+    State m_State;
+    float m_MigrationStep;
+    float m_MigrationTotal;
+    std::map<std::string, float> m_MigrationReport;
+    float m_GeneratorPower;
+    bool m_result;
+
 public:
+    //Constructor
+    ReversePowerFlowInvariant(State state, float migrationStep, float migrationTotal,
+                              std::map<std::string, float>& migrationReport, float generatorPower);
 
-    /// Overwrite () operator for quick function call in load balance.
-    virtual bool operator() () = 0;
-
-    /// Virtual destructor
-    virtual ~Invariant() {};
+    //Overwrite () operator for quick function call in load balance.
+    bool operator() ();
 };
 
 }//broker
 }//freedm
 
-#endif //invariant.hpp
+#endif //ReversePowerFlowInvariant.hpp
 
