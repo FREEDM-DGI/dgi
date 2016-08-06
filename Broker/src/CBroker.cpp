@@ -401,9 +401,7 @@ int CBroker::Schedule(ModuleIdent m, BoundScheduleable x, bool start_worker)
     m_ready[m].push_back(x);
     if(!m_busy && start_worker)
     {
-        schlock.unlock();
-        Worker();
-        schlock.lock();
+        m_ioService.post(boost::bind(&CBroker::Worker, this));
     }
     Logger.Debug<<"Module "<<m<<" now has queue size: "<<m_ready[m].size()<<std::endl;
     Logger.Debug<<"Scheduled task (NODELAY) for "<<m<<std::endl;
@@ -565,8 +563,7 @@ void CBroker::ScheduledTask(CBroker::Scheduleable x, CBroker::TimerHandle handle
     Logger.Debug<<"Module "<<module<<" now has queue size: "<<m_ready[module].size()<<std::endl;
     if(!m_busy)
     {
-        schlock.unlock();
-        Worker();
+        m_ioService.post(boost::bind(&CBroker::Worker, this));
     }
 }
 
