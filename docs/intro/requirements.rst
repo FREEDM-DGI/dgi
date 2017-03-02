@@ -48,8 +48,9 @@ MQTT Client Libraries can be found both on the paho mqtt website.
 If your running UBUNTU or LINUX, installing the Libraries from software-manager or the software-center is recommended.
 Otherwise here are the links to the paho mqtt client libraries with installation instructions::
 
-C : https://eclipse.org/paho/clients/c/
-C++ : https://eclipse.org/paho/clients/cpp/
+	C : https://eclipse.org/paho/clients/c/ 
+	C++ : https://eclipse.org/paho/clients/cpp/
+	
 NOTE : make sure to have the libpaho-mqtt3a.so files in /usr/local/lib.
 
 For more info try the FREEDM MQTT github wiki page : https://github.com/FREEDM-DGI/FREEDM/wiki/MQTT
