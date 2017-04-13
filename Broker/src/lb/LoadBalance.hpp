@@ -24,6 +24,7 @@
 #ifndef LOAD_BALANCE_HPP
 #define LOAD_BALANCE_HPP
 
+#include "Invariant.hpp"
 #include "CBroker.hpp"
 #include "CDevice.hpp"
 #include "CPeerNode.hpp"
@@ -129,8 +130,6 @@ private:
     void ScheduleStateCollection();
     /// Synchronizes the Fast-Style Loadbalance with the physical system.
     void Synchronize(float k);
-    /// Check the invariant prior to starting a new migration.
-    bool InvariantCheck();
 
     /// The amount of time it takes to do an LB round
     const boost::posix_time::time_duration ROUND_TIME;

@@ -583,6 +583,10 @@ ModuleMessage LBAgent::MessageDraftRequest()
 /////////////////////////////////////////////////////////
 void LBAgent::SendDraftRequest()
 {
+    // Declares InvariantCheck function object
+    Invariant InvariantCheck(m_State, m_MigrationStep, m_MigrationTotal, m_MigrationReport,
+        m_GeneratorPower);
+
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
 
     if(m_State != LBAgent::SUPPLY)
@@ -1192,7 +1196,7 @@ void LBAgent::HandleCollectedState(const CollectedStateMessage & m)
 void LBAgent::Synchronize(float k)
 {
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
-    
+
     ReadDevices();
     m_PowerDifferential = k;
     m_PredictedGateway = m_Gateway;
@@ -1200,51 +1204,6 @@ void LBAgent::Synchronize(float k)
 
     Logger.Info << "Reset Gross Power Flow: " << k << std::endl;
     Logger.Info << "Reset Predicted Gateway: " << m_Gateway << std::endl;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-/// InvariantCheck
-/// @description Evaluates the current truth of the physical invariant
-/// @pre none
-/// @post calculate the physical invariant using the Omega device
-/// @return the truth value of the physical invariant 
-///////////////////////////////////////////////////////////////////////////////
-bool LBAgent::InvariantCheck()
-{
-    Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
-
-    const float OMEGA_STEADY_STATE = 376.8;
-    const int SCALING_FACTOR = 1000;
-
-    bool result = true;
-    std::set<device::CDevice::Pointer> container;
-    container = device::CDeviceManager::Instance().GetDevicesOfType("Omega");
-
-    if(container.size() > 0 && CGlobalConfiguration::Instance().GetInvariantCheck())
-    {
-        if(container.size() > 1)
-        {
-            Logger.Warn << "Multiple attached frequency devices." << std::endl;
-        }
-        float w  = (*container.begin())->GetState("frequency");
-        float P  = SCALING_FACTOR * m_PowerDifferential;
-        float dK = SCALING_FACTOR * (m_PowerDifferential + m_MigrationStep);
-        float freq_diff = w - OMEGA_STEADY_STATE;
-
-        Logger.Info << "Invariant Variables:"
-            << "\n\tw  = " << w
-            << "\n\tP  = " << P
-            << "\n\tdK = " << dK << std::endl;
-
-        result &= freq_diff*freq_diff*(0.1*w+0.008)+freq_diff*((5.001e-8)*P*P) > freq_diff*dK;
-
-        if(!result)
-        {
-            Logger.Info << "The physical invariant is false." << std::endl;
-        }
-    }
-
-    return result;
 }
 
 } // namespace lb
