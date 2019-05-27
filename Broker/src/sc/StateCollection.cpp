@@ -296,7 +296,7 @@ void SCAgent::StateResponse()
                             csm->clear_gateway();
                         }
                     }
-                    else if (dssm.type() == "Drer")
+                    else if (dssm.type() == "DRER")
                     {
                         if(dssm.count()>0)
                         {
@@ -329,7 +329,7 @@ void SCAgent::StateResponse()
                             csm->clear_drain();
                         }
                     }
-                    else if (dssm.type() == "Fid")
+                    else if (dssm.type() == "FID")
                     {
                         if(dssm.count()>0)
                         {

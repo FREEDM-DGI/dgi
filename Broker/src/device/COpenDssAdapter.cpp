@@ -167,7 +167,7 @@ namespace freedm {
                     }
                 }
                 bzero(buffer,BUFFER_SIZE-1);
-                sd = m_socket.native();
+                sd = m_socket.native_handle();
                 if(!(read(sd,buffer, BUFFER_SIZE-1))){
                     Logger.Status<<"Error reading socket!?"<<std::endl;
                 }

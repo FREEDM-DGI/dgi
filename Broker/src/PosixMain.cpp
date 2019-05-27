@@ -412,10 +412,10 @@ int main(int argc, char* argv[])
             "lb",
             boost::bind(&lb::LBAgent::Run, boost::dynamic_pointer_cast<lb::LBAgent>(LB)),
             false);
-         CBroker::Instance().Schedule(
-            "vvc",
-            boost::bind(&vvc::VVCAgent::Run, boost::dynamic_pointer_cast<vvc::VVCAgent>(VVC)),
-            false);
+         //CBroker::Instance().Schedule(
+         //   "vvc",
+         //   boost::bind(&vvc::VVCAgent::Run, boost::dynamic_pointer_cast<vvc::VVCAgent>(VVC)),
+         //   false);
     }
     catch (std::exception & e)
     {
