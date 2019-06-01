@@ -6,8 +6,7 @@ PROTOBUF_GENERATE_CPP(PROTO_SRCS
                       LoadBalancing.proto
                       GroupManagement.proto
                       StateCollection.proto
-                      
-                      # for vvc 
                       VoltVarCtrl.proto)
+                      DispatchAlgo.proto)
 
 add_library(messages ${PROTO_SRCS} ${PROTO_HDRS})

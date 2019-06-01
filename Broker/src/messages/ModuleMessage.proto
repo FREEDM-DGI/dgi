@@ -23,6 +23,7 @@ import "GroupManagement.proto";
 import "LoadBalancing.proto";
 import "StateCollection.proto";
 import "VoltVarCtrl.proto";
+import "DispatchAlgo.proto";
 
 package freedm.broker;
 
@@ -36,5 +37,6 @@ message ModuleMessage
 
     //My new message
     optional vvc.VoltVarMessage volt_var_message = 6;
-
+    /// DESD Dispatch Message
+    optional dda.DesdStateMessage desd_state_message = 6;
 }
