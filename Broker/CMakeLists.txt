@@ -79,7 +79,7 @@ target_link_libraries(PosixBroker
                       ${Boost_PROGRAM_OPTIONS_LIBRARY}
                       ${Boost_SYSTEM_LIBRARY}
                       ${Boost_THREAD_LIBRARY}
-                      ${PROTOBUF_LIBRARIES}
+		      ${PROTOBUF_LIBRARIES}
                       ${MQTT_LIBRARIES}
                       ${ARMADILLO_LIBRARIES} 
 					)

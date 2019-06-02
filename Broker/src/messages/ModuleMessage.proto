@@ -38,5 +38,5 @@ message ModuleMessage
     //My new message
     optional vvc.VoltVarMessage volt_var_message = 6;
     /// DESD Dispatch Message
-    optional dda.DesdStateMessage desd_state_message = 6;
+    optional dda.DesdStateMessage desd_state_message = 7;
 }
