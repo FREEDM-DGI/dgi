@@ -302,7 +302,6 @@ void LBAgent::LoadManage(const boost::system::error_code & error)
 
     if(!error)
     {
-	std::cout << "----------------------------STARTING LOAD MANAGE----------------------------"<< std::endl;
         ScheduleNextRound();
         ReadDevices();
         UpdateState();
@@ -346,7 +345,6 @@ void LBAgent::LoadManage(const boost::system::error_code & error)
         Logger.Error << error << std::endl;
         throw boost::system::system_error(error);
     }
-    std::cout<< "------------------------------------------------end of Load Manage------------------------------------"<< std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -360,7 +358,6 @@ void LBAgent::LoadManage(const boost::system::error_code & error)
 void LBAgent::ScheduleNextRound()
 {
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
-    std::cout << "-----------------------------Scheduling Next Round------------------------"<< std::endl;
     if(CBroker::Instance().TimeRemaining() > ROUND_TIME + ROUND_TIME)
     {
         CBroker::Instance().Schedule(m_RoundTimer, ROUND_TIME,
@@ -384,14 +381,12 @@ void LBAgent::ScheduleNextRound()
 void LBAgent::ReadDevices()
 {
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
-    std::cout<< "--------------------------------------------Read Devices----------------------------------" << std::endl;
     float generation = device::CDeviceManager::Instance().GetNetValue("DRER", "generation");//these are placeholders, it should be generation
     float storage = device::CDeviceManager::Instance().GetNetValue("DESD", "storage");   //these are placeholders, it should be storage
     float load = device::CDeviceManager::Instance().GetNetValue("Load", "drain");
 
     m_Gateway = device::CDeviceManager::Instance().GetNetValue("SST", "gateway");     //these are placeholders, it should be gateway
     m_NetGeneration = generation + storage - load;
-    std::cout<<"------------------------------------------------end of Read Devices-----------------------------"<< std::endl;
 
    // Logger.Status << "NET dedsd VALUES: " << storage << " SST values" <<m_Gateway<< std::endl;
 
@@ -415,7 +410,6 @@ void LBAgent::ReadDevices()
 void LBAgent::UpdateState()
 {
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
-    std::cout << "----------------------------------------Update State---------------------------" << std::endl;
     int sstCount = device::CDeviceManager::Instance().GetDevicesOfType("SST").size();
     Logger.Status << "Recognize " << sstCount << " attached SST devices." << std::endl;
 
@@ -443,7 +437,6 @@ void LBAgent::UpdateState()
             Logger.Info << "Changed to NORMAL state." << std::endl;
         }
     }
-    std::cout<< "------------------------------------------End of Update State-----------------------------------------------" << std::endl;
 }
 
 ////////////////////////////////////////////////////////////
@@ -458,7 +451,6 @@ void LBAgent::UpdateState()
 void LBAgent::LoadTable()
 {
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
-    std::cout<<"--------------------------------------------Starting Load Table---------------------------------"<< std::endl;
     int drer_count = device::CDeviceManager::Instance().GetDevicesOfType("DRER").size();
     int desd_count = device::CDeviceManager::Instance().GetDevicesOfType("DESD").size();
     int load_count = device::CDeviceManager::Instance().GetDevicesOfType("Load").size();
@@ -531,7 +523,6 @@ void LBAgent::LoadTable()
 
     loadtable << "\t---------------------------------------------";
     Logger.Status << loadtable.str() << std::endl;
-    std::cout<<"--------------------------------------------end of Load Table---------------------------------"<< std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1015,7 +1006,6 @@ void LBAgent::SetPStar(float pstar)
     float generation = device::CDeviceManager::Instance().GetNetValue("DRER", "generation");
    // float storage = device::CDeviceManager::Instance().GetNetValue("DESD", "storage");
     float load = device::CDeviceManager::Instance().GetNetValue("Load", "drain");
-    std::cout << "----------------------------------------------SetPStar Function --------------------" << std::endl;
     SetDESD(pstar - generation + load);
 
     /*if(sstContainer.size() > 0)
@@ -1048,7 +1038,6 @@ void LBAgent::SetDESD(float desdv)
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
 
     std::set<device::CDevice::Pointer> desd;
-    std::cout<<"----------------------------------setDESD Function-------------------------------" << std::endl;
     desd = device::CDeviceManager::Instance().GetDevicesOfType("DESD");
 
 
