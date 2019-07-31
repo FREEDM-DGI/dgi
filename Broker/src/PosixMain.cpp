@@ -328,9 +328,9 @@ int main(int argc, char* argv[])
     boost::shared_ptr<IDGIModule> GM = boost::make_shared<gm::GMAgent>();
     boost::shared_ptr<IDGIModule> SC = boost::make_shared<sc::SCAgent>();
     boost::shared_ptr<IDGIModule> LB = boost::make_shared<lb::LBAgent>();
-    boost::shared_ptr<IDGIModule> VVC = boost::make_shared<vvc::VVCAgent>();
+    //boost::shared_ptr<IDGIModule> VVC = boost::make_shared<vvc::VVCAgent>();
     // Initialize DESD Dispatch Algorithm module
-    boost::shared_ptr<IDGIModule> DDA = boost::make_shared<dda::DDAAgent>();
+    //boost::shared_ptr<IDGIModule> DDA = boost::make_shared<dda::DDAAgent>();
     
     try
     {
@@ -348,15 +348,15 @@ int main(int argc, char* argv[])
         CDispatcher::Instance().RegisterReadHandler(LB, "lb");
 
         // StateCollection wants to receive Accept messages addressed to vvc.
-        CDispatcher::Instance().RegisterReadHandler(SC, "vvc");
+        //CDispatcher::Instance().RegisterReadHandler(SC, "vvc");
         // Instantiate and register the power management module
-        CBroker::Instance().RegisterModule("vvc",boost::posix_time::milliseconds(CTimings::Get("VVC_PHASE_TIME")));
-        CDispatcher::Instance().RegisterReadHandler(VVC, "vvc");
+        //CBroker::Instance().RegisterModule("vvc",boost::posix_time::milliseconds(CTimings::Get("VVC_PHASE_TIME")));
+        //CDispatcher::Instance().RegisterReadHandler(VVC, "vvc");
 
        // Register DESD Dispatch Algorithm module
-        CBroker::Instance().RegisterModule("dda", boost::posix_time::milliseconds(10000));
-        CDispatcher::Instance().RegisterReadHandler(DDA, "dda");
-        Logger.Notice << "DDA Module registered...... " << std::endl;
+        //CBroker::Instance().RegisterModule("dda", boost::posix_time::milliseconds(10000));
+        //CDispatcher::Instance().RegisterReadHandler(DDA, "dda");
+        //Logger.Notice << "DDA Module registered...... " << std::endl;
         
         // The peerlist should be passed into constructors as references or
         // pointers to each submodule to allow sharing peers. NOTE this requires

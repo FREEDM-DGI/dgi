@@ -487,7 +487,7 @@ void LBAgent::LoadTable()
     loadtable << "\tNet Generation: " << m_NetGeneration << std::endl;
     loadtable << "\tPredicted K:    " << m_PowerDifferential << std::endl;
     loadtable << "\t---------------------------------------------" << std::endl;
-    Logger.Status << "NET dedsd VALUES: " << storage << " SST values" <<m_Gateway<< std::endl;
+    Logger.Status << "NET desd VALUES: " << storage << " SST values " <<m_Gateway<< std::endl;
 
     if(m_State == LBAgent::DEMAND)
     {
