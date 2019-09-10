@@ -388,8 +388,7 @@ void LBAgent::ReadDevices()
     m_Gateway = device::CDeviceManager::Instance().GetNetValue("SST", "gateway");     //these are placeholders, it should be gateway
     m_NetGeneration = generation + storage - load;
 
-   // Logger.Status << "NET dedsd VALUES: " << storage << " SST values" <<m_Gateway<< std::endl;
-
+    // Logger.Status << "NET dedsd VALUES: " << storage << " SST values" <<m_Gateway<< std::endl;
     // Keeping the above changes in merge and disabling below
     // float generation = device::CDeviceManager::Instance().GetNetValue("Drer", "generation");
     // float storage = device::CDeviceManager::Instance().GetNetValue("Desd", "storage");
@@ -454,25 +453,10 @@ void LBAgent::LoadTable()
     int drer_count = device::CDeviceManager::Instance().GetDevicesOfType("DRER").size();
     int desd_count = device::CDeviceManager::Instance().GetDevicesOfType("DESD").size();
     int load_count = device::CDeviceManager::Instance().GetDevicesOfType("Load").size();
-    float generation = device::CDeviceManager::Instance().GetNetValue("DRER", "generation");////these are placeholders, it should be generation
-    float storage = device::CDeviceManager::Instance().GetNetValue("DESD", "storage");////these are placeholders, it should be storage
-    // keeping the above 5 lines as part of resolving merge conflict
-    // int drer_count = device::CDeviceManager::Instance().GetDevicesOfType("Drer").size();
-    // int desd_count = device::CDeviceManager::Instance().GetDevicesOfType("Desd").size();
-    // int load_count = device::CDeviceManager::Instance().GetDevicesOfType("Load").size();
-    // float generation = device::CDeviceManager::Instance().GetNetValue("Drer", "generation");
-    // float storage = device::CDeviceManager::Instance().GetNetValue("Desd", "storage");
-
+    float generation = device::CDeviceManager::Instance().GetNetValue("DRER", "generation");
+    float storage = device::CDeviceManager::Instance().GetNetValue("DESD", "storage");
     float load = device::CDeviceManager::Instance().GetNetValue("Load", "drain");
     
-    //Below code isnt good for anything 
-    /*
-    if (desd_count > 0) { //pub
-        device::CDevice::Pointer dev1 = device::CDeviceManager::Instance().GetDevice("DESD");
-        dev1->SetCommand("AIN/Active_Pwr", 8888);
-        Logger.Status << "Set command on " << dev1->GetID() << std::endl;
-    }
-    */
     std::stringstream loadtable;
     loadtable << std::setprecision(2) << std::fixed;
     loadtable << "------- LOAD TABLE (Power Management) -------" << std::endl;
@@ -1000,15 +984,15 @@ void LBAgent::SetPStar(float pstar)
 {
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
 
-    //std::set<device::CDevice::Pointer> sstContainer;
-    //sstContainer = device::CDeviceManager::Instance().GetDevicesOfType("Sst");
+    std::set<device::CDevice::Pointer> sstContainer;
+    sstContainer = device::CDeviceManager::Instance().GetDevicesOfType("SST");
 
-    float generation = device::CDeviceManager::Instance().GetNetValue("DRER", "generation");
-   // float storage = device::CDeviceManager::Instance().GetNetValue("DESD", "storage");
-    float load = device::CDeviceManager::Instance().GetNetValue("Load", "drain");
-    SetDESD(pstar - generation + load);
+    float generation = 0; //device::CDeviceManager::Instance().GetNetValue("DRER", "generation");
+    float storage = 0; //device::CDeviceManager::Instance().GetNetValue("DESD", "storage");
+    float load = 0;//device::CDeviceManager::Instance().GetNetValue("Load", "drain");
+    //SetDESD(pstar - generation + load);
 
-    /*if(sstContainer.size() > 0)
+    if(sstContainer.size() > 0)
     {
         if(sstContainer.size() > 1)
         {
@@ -1022,7 +1006,7 @@ void LBAgent::SetPStar(float pstar)
     else
     {
         Logger.Warn << "Failed to set P*: no attached SST device" << std::endl;
-    }*/
+    }
 }
 
 ////////////////////////////////////////////////////////////
