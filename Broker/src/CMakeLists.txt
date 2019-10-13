@@ -23,7 +23,17 @@ set(BROKER_FILES
     CPhysicalTopology.cpp
     gm/GroupManagement.cpp
     lb/LoadBalance.cpp
-    sc/StateCollection.cpp
+    sc/StateCollection.cpp 
+    vvc/VoltVarCtrl.cpp
+    vvc/form_Ftheta.cpp
+    vvc/form_Fv.cpp
+    vvc/form_J.cpp
+    vvc/form_Yabc.cpp
+    vvc/load_system_data.cpp
+    vvc/rename_brn.cpp 
+    vvc/V_abc_list.cpp
+    vvc/DPF_return7.cpp
+    dda/DispatchAlgo.cpp
    )
 
 # generate the configuration file

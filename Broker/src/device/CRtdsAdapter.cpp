@@ -186,6 +186,7 @@ void CRtdsAdapter::Run(const boost::system::error_code & e)
             TimedWrite(m_socket, boost::asio::buffer(m_txBuffer,
                     m_txBuffer.size() * sizeof(SignalValue)),
                     CTimings::Get("DEV_SOCKET_TIMEOUT"));
+
         }
         catch(boost::system::system_error & e)
         {
@@ -231,6 +232,8 @@ void CRtdsAdapter::Run(const boost::system::error_code & e)
             }
             if( m_buffer_initialized )
             {
+                Logger.Status << "Clientdata : " <<m_rxBuffer[0]<< std::endl;
+
                 RevealDevices();
             }
         }

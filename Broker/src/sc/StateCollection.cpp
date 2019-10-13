@@ -148,6 +148,10 @@ void SCAgent::HandleIncomingMessage(boost::shared_ptr<const ModuleMessage> msg, 
             HandleAccept(peer);
         }
     }
+    else if (msg->has_volt_var_message())
+    {
+        vvc::VoltVarMessage vvm = msg->volt_var_message();
+    }
     else if (msg->has_state_collection_message())
     {
         StateCollectionMessage scm = msg->state_collection_message();
@@ -281,7 +285,7 @@ void SCAgent::StateResponse()
                                   << dssm.type() << " : "
                                   << dssm.signal() << " : "
                                   << dssm.value() << std::endl;
-                    if (dssm.type() == "Sst")
+                    if (dssm.type() == "SST")
                     {
                         if(dssm.count()>0)
                         {
@@ -292,7 +296,7 @@ void SCAgent::StateResponse()
                             csm->clear_gateway();
                         }
                     }
-                    else if (dssm.type() == "Drer")
+                    else if (dssm.type() == "DRER")
                     {
                         if(dssm.count()>0)
                         {
@@ -303,7 +307,7 @@ void SCAgent::StateResponse()
                             csm->clear_generation();
                         }
                     }
-                    else if (dssm.type() == "Desd")
+                    else if (dssm.type() == "DESD")
                     {
                         if(dssm.count()>0)
                         {
@@ -325,7 +329,7 @@ void SCAgent::StateResponse()
                             csm->clear_drain();
                         }
                     }
-                    else if (dssm.type() == "Fid")
+                    else if (dssm.type() == "FID")
                     {
                         if(dssm.count()>0)
                         {

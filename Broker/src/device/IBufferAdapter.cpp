@@ -127,6 +127,7 @@ void IBufferAdapter::Start()
     {
         throw std::runtime_error("The command indices are not consecutive.");
     }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////
