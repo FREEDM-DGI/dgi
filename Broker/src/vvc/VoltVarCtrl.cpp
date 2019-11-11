@@ -307,11 +307,11 @@ void VVCAgent::ReadDevices()
 {
     Logger.Trace << __PRETTY_FUNCTION__ << std::endl;
 
-    float generation = device::CDeviceManager::Instance().GetNetValue("Drer", "generation");
-    float storage = device::CDeviceManager::Instance().GetNetValue("Desd", "storage");
+    float generation = device::CDeviceManager::Instance().GetNetValue("DRER", "generation");
+    float storage = device::CDeviceManager::Instance().GetNetValue("DESD", "storage");
     float load = device::CDeviceManager::Instance().GetNetValue("Load", "drain");
 
-    m_Gateway = device::CDeviceManager::Instance().GetNetValue("Sst", "gateway");
+    m_Gateway = device::CDeviceManager::Instance().GetNetValue("SST", "gateway");
     m_NetGeneration = generation + storage - load;
 }
 
